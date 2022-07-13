@@ -1,0 +1,15 @@
+/// \defgroup io I/O
+/// \brief This module contains all the classes which allow to load or save a CSP instance.
+/// \details The supported input formats are:
+/// - CSP format
+/// - XML format (XCSP2.1)
+/// - XML format (XCSP3-core)
+/// - CNF SAT format
+/// - WCSP format (constraints in extension only)
+///
+/// The supported output formats are:
+/// - CSP format (binary CSP instances only)
+/// - XML format (XCSP2.1)
+/// - XML format (XCSP3-core)
+/// - CNF SAT format (direct encoding, log encoding, tuple encoding)
+/// - WCSP format

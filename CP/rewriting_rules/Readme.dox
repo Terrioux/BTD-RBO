@@ -1,0 +1,12 @@
+/// \defgroup rewriting Rewriting rules
+/// \brief This module contains all the classes which implement rewriting rules
+/// \details Some implemented rule:
+/// - predicate to sum
+/// - predicate to weighted sum
+/// - predicate to all-different
+/// - predicate to all-equal
+/// - predicate to no-overlap
+/// - ...
+
+
+

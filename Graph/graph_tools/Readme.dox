@@ -1,0 +1,3 @@
+/// \defgroup graph_tools Graph tools
+/// \brief This module contains some tools useful for handling (hyper)graph.
+

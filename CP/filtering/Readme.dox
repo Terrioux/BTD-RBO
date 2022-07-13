@@ -1,0 +1,14 @@
+/// \defgroup filtering Filtering
+/// \brief This module contains all the classes which deals with consistency checking.
+/// \details It notably provides classes implementing:
+/// - algorithms enforcing different levels of consistency like :
+///   + Arc-Consistency,
+///   + Max-Restricted Path Consistency
+///   + Neighborhood Inverse Consistency,
+///   + Pairwise Consistency,
+///   + Path Inverse Consistency,
+///   + Path Consistency,
+///   + Singleton Arc-Consistency,
+/// - data structure for these algorithms
+/// - constraint selection.
+

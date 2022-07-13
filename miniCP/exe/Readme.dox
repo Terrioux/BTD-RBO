@@ -1,0 +1,7 @@
+/// \defgroup exe Executable
+/// \brief This module contains the sources for each executable provided by the library
+/// \details The following executable are available:
+/// - BTD which allows to solve CSP instances
+/// - RBO which allows to solve COP instances
+
+

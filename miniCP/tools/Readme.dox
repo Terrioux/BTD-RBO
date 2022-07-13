@@ -1,0 +1,11 @@
+/// \defgroup tools Tools
+/// \brief This module provides some complementary tools
+/// \details These tools cover:
+/// - constraints
+/// - expressions
+/// - filtering 
+/// - input/output
+/// - signal handler
+/// - solvers
+/// - tree-decomposition
+/// - value merging

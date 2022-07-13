@@ -1,0 +1,5 @@
+/// \defgroup optimizer Optimizer
+/// \brief This module contains all the classes which deal with the solving of COP problem (in particular solving algorithms).
+/// \details It notably provides classes implementing several kind of solving algorithms:
+///   + Branch and Bound (RFL, MAC)
+///   + Restart based (MAC)

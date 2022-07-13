@@ -1,0 +1,8 @@
+/// \defgroup solver Solver
+/// \brief This module contains all the classes which deal with the solving of CSP problem (in particular solving algorithms).
+/// \details It notably provides classes implementing the solving algorithms like:
+///   + BT
+///   + FC
+///   + RFL
+///   + MAC
+///   + BTD

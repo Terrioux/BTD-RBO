@@ -1,0 +1,9 @@
+TODO List:
+- implement the function Load_CSP in the Graph class
+- implement the function Load_WCSP in the Graph class
+- take into account the connected components when triangulating a graph with several connected components
+- add the notion of subgraph and partial subgraph (useful in order to take into account the several components and cutset respectively)
+- fix the problem during the checking of parameters in convert tool
+
+
+- possible pb when copying a graph (the graph is not free before assigning with a new value) in classes Graph or Light_Graph

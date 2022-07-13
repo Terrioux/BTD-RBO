@@ -1,0 +1,27 @@
+/// \defgroup heuristics Heuristics
+/// \brief This module contains all the classes which implement variable or value heuristics
+/// \details Some implemented variable heuristics:
+/// - dom [Golomb and Baumert, JACM, 1965.]
+/// - dom+deg
+/// - dom/deg [Bessière et Régin, CP, 1996]
+/// - dom/wdeg and its refinement ca.cd [Boussemart et al., ECAI, 2004 ; Wattez et al., ICTAI, 2019]
+/// - wdeg and its refinement ca.cd [Boussemart et al., ECAI, 2004 ; Wattez et al., ICTAI, 2019]
+/// - activity based search [Michel et van Hentenryck, CPAIOR, 2012]
+/// - impact based search [Refalo, CP, 2004]
+/// - CHS [Habet et Terrioux, SAC, 2019]
+/// - MAB with various heuristics [Wattez et al., ECAI, 2020]
+/// - MAB-CHS [Cherif et al, ICTAI, 2020]
+/// - random
+/// 
+/// MAB can rely on UCB1 or MOSS policy with various reward functions:
+/// - Saved Tree Size [Wattez et al., ECAI, 2020]
+/// - Log Saved Tree Size (variant of the previous one with an additional log)
+/// - Depth  [Cherif et al, ICTAI, 2020]
+/// - Conflict/Decision ratio
+/// - Explored Subtree [Wattez and Paparrizou, 2020]
+///
+/// Some implemented value heuristics:
+/// - lexicographical order
+/// - max domain product
+/// - max domain sum
+/// - random

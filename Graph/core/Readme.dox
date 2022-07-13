@@ -1,0 +1,7 @@
+/// \defgroup core Core
+/// \brief This module contains all the classes which allow to represent graphical structure like graph or hypergraph.
+/// \details It notably provides classes implementing:
+/// - graph
+/// - hypergraph
+/// - edge
+

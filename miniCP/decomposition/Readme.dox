@@ -1,0 +1,7 @@
+/// \defgroup decomposition Decomposition
+/// \brief This module contains all the classes which allow to manage decompositions.
+/// \details It includes notably:
+/// - heuristics for computing the first cluster (for the H-TD framework)
+/// - heuristics for choosing the root cluster
+/// - heuristics for choosing the next cluster
+/// - data structure for storing (no)goods

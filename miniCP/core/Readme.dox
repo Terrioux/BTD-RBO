@@ -1,0 +1,8 @@
+/// \defgroup core Core
+/// \brief This module contains all the classes which allow to represent a CSP instance.
+/// \details It notably provides classes implementing:
+/// - variables
+/// - domains
+/// - constraints
+/// 
+/// It also provides classes implementing assignment, tuple or event manager.

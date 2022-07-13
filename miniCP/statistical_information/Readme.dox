@@ -1,0 +1,2 @@
+/// \defgroup information Information
+/// \brief This module provides classes implementing different kinds of counters and defines different counters which allow assessing the behaviour of algorithms

@@ -1,0 +1,9 @@
+/// \defgroup tree-decomposition Tree-decomposition
+/// \brief This module contains all the classes which allow to manage decompositions.
+/// \details It includes notably:
+/// - tree-decomposition computed thanks to heuristics (like the H-TD framework)
+/// - tree-decomposition computed thanks to a triangulation (like Min-Fill)
+/// - exact tree-decomposition computed thanks to the tools provided for PACE'17
+/// - heuristics for computing the first cluster (for the H-TD framework)
+/// - heuristics for choosing the root cluster
+/// - heuristics for choosing the next cluster

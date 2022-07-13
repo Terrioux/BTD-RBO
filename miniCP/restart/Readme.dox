@@ -1,0 +1,5 @@
+/// \defgroup restart Restart
+/// \brief This module contains all the classes which deal with the restart policy which can be used by solvers, counters or optimizers. 
+/// \details It notably provides classes implementing:
+///   + geometric restarts
+///   + luby restarts
