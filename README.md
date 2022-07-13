@@ -11,7 +11,7 @@ BTD/RBO solvers have the following requirements:
 * C++ 11 or later
 
 ## Building instructions
-First, download the sources of BenzAI or clone the repository, for example, by executing the following command:  
+First, download the sources or clone the repository, for example, by executing the following command:  
 
     git clone https://github.com/Terrioux/BTD-RBO.git
     
