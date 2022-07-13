@@ -41,6 +41,6 @@ The BTD/RBO solvers rely on several third-party open-source libraries, each bein
 
 # Directories
 * CP: the source files of the constraint solvers developed for the CSP/COP standard track of the XCSP competition
-* Graph: our graph librairy 
+* Graph: our graph library 
 * XCSP3-Parser: a variant of the XCSP3 Core Parser in C++, derived from [https://github.com/xcsp3team/XCSP3-CPP-Parser](https://github.com/xcsp3team/XCSP3-CPP-Parser)
 * miniCP: the source files of the constraint solvers developed for the CSP/COP mini track of the XCSP competition
