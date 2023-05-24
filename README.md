@@ -5,7 +5,7 @@ BTD and RBO are open-source solvers which handle respectively CSP and COP instan
 
 # Download and installation
 
-As your convenience, you can download an executable jar (from our [release](https://github.com/Terrioux/BTD-RBO/releases) repository) or the [source code](https://github.com/Terrioux/BTD-RBO).
+You can download the [source code](https://github.com/Terrioux/BTD-RBO).
 
 BTD/RBO solvers have the following requirements:
 * C++ 11 or later
