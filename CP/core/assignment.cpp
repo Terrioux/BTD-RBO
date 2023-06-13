@@ -10,12 +10,20 @@
 // constructors
 //--------------
 
-
-Assignment::Assignment (int max_size) : values (max_size), position (max_size,-1)
-// construct an empty assignment and reserves memory for an assignment of  maximum size max_size
-/// param[in] max_size the maximal size of the assignment we construct
+Assignment::Assignment (int max_size): values (max_size), position (max_size,-1)
+// construct an empty assignment whose maximum size is max_size and which involves variables of label at most max_size
 {
   size = 0;
+  maximal_size = max_size;  
+}
+
+Assignment::Assignment (int max_size, int max_label): values (max_size), position (max_label,-1)
+// construct an empty assignment whose maximum size is max_size and which involves variables of label at most max_label-1
+/// param[in] max_size the maximal size of the assignment we construct
+/// param[in] max_label the maximal label minus one of the variables which could be involved in the assignment
+{
+  size = 0;
+  maximal_size = max_size;
 }
 
 
@@ -24,6 +32,7 @@ Assignment::Assignment (Assignment & a)
 /// param[in] a the assignment we want to copy
 {
   size = a.size;
+  maximal_size = a.maximal_size;
 	values = a.values;
 	position = a.position;	
 }
@@ -41,6 +50,7 @@ Assignment & Assignment::operator= (Assignment & a)
 	{
     size = a.size;
   	values = a.values;
+    maximal_size = a.maximal_size;
 		position = a.position;
 	}
 	return *this;

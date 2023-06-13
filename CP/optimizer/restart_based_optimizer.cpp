@@ -11,8 +11,8 @@
 //----------------------------
 
 
-Restart_Based_Optimizer::Restart_Based_Optimizer (COP * inst, Variable_Heuristic * var_heur, Value_Heuristic * val_heur, AC * cc, Deletion_Stack * stack, Restart_Policy *rp, Update_Policy * update_pol, double limit): solution (inst->Get_N()), A (inst->Get_N())
-// constructs a optimizer in order to solve the instance inst by using the variable heuristic var_heur, the value heuristic val_heur, the arc-consistency cc and the deletion stack stack. The runtime is limited to limit
+Restart_Based_Optimizer::Restart_Based_Optimizer (COP * inst, Variable_Heuristic * var_heur, Value_Heuristic * val_heur, AC * cc, Deletion_Stack * stack, Restart_Policy *rp, Update_Policy * update_pol, double limit): solution (inst->Get_Mandatory_N(),inst->Get_N()), A (inst->Get_Mandatory_N(),inst->Get_N())
+// constructs an optimizer in order to solve the instance inst by using the variable heuristic var_heur, the value heuristic val_heur, the arc-consistency cc and the deletion stack stack. The runtime is limited to limit
 {
 	pb = inst;
 	state = NOT_RUN_YET;
@@ -68,15 +68,18 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 	bool * is_marked = new bool [n];
 	for (unsigned int i = 0; i < n; i++)
 		is_marked[i] = false;
-
+  
+  unsigned int size_assignment = 0;
+  
   Nogood_Base_Global_Constraint * nogood_base = 0;
   
   vector<Variable*> candidates;     // the set of variables which can be chosen by the variable heuristic
   candidates.reserve(n);
 
-	Variable * x_obj = pb->Get_Objective_Variable();    // the objective variable
-	int var_obj = x_obj->Get_Num();                     // the number of the objective variable
-  bool contains_x_obj;    // true if the current connected component contains the objective variable, false otherwise
+	Variable * x_upper = pb->Get_Upper_Bound_Variable();    // the upper bound variable
+	int var_upper = x_upper->Get_Num();                     // the number of the upper bound variable
+  bool contains_x_upper;    // true if the current connected component contains the upper bound variable, false otherwise
+
   
 	while ((Solving_Timer.Get_Duration () < time_limit) && (result == -1))
 	{
@@ -87,15 +90,44 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
     
     if (nb_marked == 0)
     {
-      contains_x_obj = true;
-      x0 = var_obj;      
+      contains_x_upper = true;
+            // we look for a mandatory variable link to the upper bound variable
+      x0 = var_upper;
+      bool found = ! pb->Get_Variable(x0)->Is_Auxiliary();
+      bool * is_marked_h = new bool [n];
+      for (unsigned int i = 0; i < n; i++)
+        is_marked_h[i] = false;
+      stack<int> S_h;
+      S_h.push(x0);
+      
+      while (! found)
+      {
+        x0 = S_h.top();
+        S_h.pop();
+        for (list<Edge *>::iterator iter_edge = h->Begin_Edge_List (x0); (iter_edge != h->End_Edge_List (x0)) && (!found); iter_edge++)
+          for (set<vertex>::iterator iter_v = (*iter_edge)->Begin(); (iter_v != (*iter_edge)->End()) && (!found); iter_v++)
+            if (pb->Get_Variable(*iter_v)->Is_Auxiliary())
+            {
+              if (! is_marked_h[*iter_v])
+              {
+                S_h.push(*iter_v);
+                is_marked_h[*iter_v] = true;
+              }
+            }
+            else 
+              {
+                found = true;
+                x0 = *iter_v;
+              }
+      }
     }
     else
       {
-        contains_x_obj = false;
+        contains_x_upper = false;
         x0 = 0;
         while ((x0 < pb->Get_N()) && (is_marked[x0]))
           x0++;
+        size_assignment = 0;
         A.Clear();
       }
 		
@@ -109,7 +141,12 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 			x0 = S.top();
 			S.pop();
 			
-			candidates.push_back(pb->Get_Variable(x0));
+			if (! pb->Get_Variable(x0)->Is_Auxiliary())
+      {
+        candidates.push_back(pb->Get_Variable(x0));
+        size_assignment++;
+      }
+
 			value_number += pb->Get_Variable(x0)->Get_Domain()->Get_Size();
 			size_cc++;
 			
@@ -149,7 +186,7 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 		pair<int,int> nogood [n];
 		unsigned int initial_size = A.Get_Size();
     
-    bool init = contains_x_obj;
+    bool init = contains_x_upper;
 
 		while ((Solving_Timer.Get_Duration () < time_limit) && (result == -1))
     {
@@ -167,7 +204,7 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 
         if (is_consistent)
         {
-          if (A.Get_Size() == size_cc)
+          if (A.Get_Size() == size_assignment)
           {
             // all the variables are assigned consistently: we have a solution
             result = 1;            
@@ -302,15 +339,15 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
       if (result == 1)
       {
         // we have a solution for the current connected component
-        if (contains_x_obj)
+        if (contains_x_upper)
         {
           // we have found a first solution or a better solution
           solution = A;
-          solution_cost = A.Get_Value(pb->Get_Objective_Variable()->Get_Num());
+          solution_cost = pb->Get_Cost(solution);
           cout << "o ";
           if (pb->Get_Objective() == MINIMIZE)
-            cout << pb->Get_Objective_Variable()->Get_Domain()->Get_Real_Value(solution_cost) << endl;
-          else cout << -pb->Get_Objective_Variable()->Get_Domain()->Get_Real_Value(solution_cost) << endl;
+            cout << solution_cost << endl;
+          else cout << -solution_cost << endl;
         }
         else 
           {
@@ -343,7 +380,7 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
           }
         }
 
-        if ((result == 2) || ((result == 1) && (contains_x_obj) && (update->Record_Nogoods())))
+        if ((result == 2) || ((result == 1) && (contains_x_upper) && (update->Record_Nogoods())))
         {
           // we record some nogoods
 
@@ -387,8 +424,8 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 
       if ((result == 0) || (result == 1))
       {
-        if (contains_x_obj)
-          result = update->Update_Problem(result, solution, ac,ds);
+        if (contains_x_upper)
+          result = update->Update_Problem(result, solution, solution_cost, ac,ds);
       }
       else
         if (result == 2)
@@ -420,11 +457,11 @@ Optimizer_State Restart_Based_Optimizer::Solve ()
 
 	switch (result)
 	{
-		case -1: if (solution.Get_Size() == n)
+		case -1: if (solution.Get_Size() == pb->Get_Mandatory_N())
                state = HAS_FOUND_SOLUTION;
              else state = HAS_BEEN_STOPPED;
              break;
-		case  0: if (solution.Get_Size() == n)
+		case  0: if (solution.Get_Size() == pb->Get_Mandatory_N())
                state = HAS_FOUND_OPTIMUM;
              else state = HAS_FOUND_INCONSISTENT;
              break;

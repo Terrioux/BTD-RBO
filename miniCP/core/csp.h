@@ -20,8 +20,10 @@ class CSP     /// This class allows to represent CSP instances \ingroup core
 {
 	protected:
 		vector<Variable *> variables;                 ///< list of the variables of the CSP
+    unsigned int mandatory_variable_number;       ///< the number of mandatory variables
 		vector<Constraint *> constraints;             ///< list of the constraints of the CSP
 		Multi_Hypergraph * h;									      	///< the constraint hypergraph representing the structure of the CSP
+		Multi_Hypergraph * mandatory_h;	  		      	///< the constraint hypergraph representing the structure of the CSP restricted to mandatory variables
     Unary_Nogood_Base_Global_Constraint * unary_nogood_base;  ///< the nogood base used by some solving algorithms
     Nogood_Base_Global_Constraint * nogood_base;  ///< the nogood base used by some solving algorithms
 		string name;														      ///< name of the instance
@@ -37,14 +39,16 @@ class CSP     /// This class allows to represent CSP instances \ingroup core
 		
 		// basic functions
 		unsigned int Get_N();												 	  ///< returns the number of variables
+		unsigned int Get_Mandatory_N();								  ///< returns the number of mandatory variables
 		unsigned int Get_D();												 	  ///< returns the size of the largest domain
 		unsigned int Get_M();												 	  ///< returns the number of constraints
 		unsigned int Get_R();												 	  ///< returns the arity of the largest constraint
 		unsigned int Get_Total_Value_Number();			 	  ///< returns the number of values in all the domains
 		string Get_Name();													 	  ///< returns the name of the instance
 		Multi_Hypergraph * Get_Structure();					 	  ///< returns a pointer on the constraint hypergraph representing the structure of the CSP
-		void Add_Variable (set<int> & values, string var_name="", bool is_auxiliary=false);  ///< adds a new variable v to the CSP whose domain is defined by the set values and whose name is var_name, is_auxiliary is set to true if the variable is auxiliary
-		void Add_Variable (int a, int b, string var_name="", bool is_auxiliary=false);  ///< adds a new variable v to the CSP whose domain is defined by the values of [a,b] and whose name is var_name, is_auxiliary is set to true if the variable is auxiliary
+		Multi_Hypergraph * Get_Mandatory_Structure();		///< returns a pointer on the constraint hypergraph representing the structure of the CSP restricted to mandatory variables
+		Variable * Add_Variable (set<long> & values, string var_name="", bool is_initial = true, bool is_auxiliary=false);  ///< adds a new variable v to the CSP whose domain is defined by the set values and whose name is var_name, is_initial is set to true if the variable appears initially in the problem, is_auxiliary is set to true if the variable is auxiliary and returns it
+		Variable * Add_Variable (long a, long b, string var_name="", bool is_initial = true, bool is_auxiliary=false);      ///< adds a new variable v to the CSP whose domain is defined by the values of [a,b] and whose name is var_name, is_initial is set to true if the variable appears initially in the problem, is_auxiliary is set to true if the variable is auxiliary and returns it
 		Variable * Get_Variable (unsigned int num);	    ///< returns a pointer on the variable number num
 		Variable * Get_Variable (string label); 			  ///< returns a pointer on the variable whose name is label
 		virtual int Add_Constraint (Constraint * c, bool duplicate = true);		///< adds a new constraint c to the CSP (a new memory space is allocated if duplicate is set to true) and returns the number of the constraint
@@ -72,6 +76,12 @@ inline unsigned int CSP::Get_N()
 	return variables.size();
 }
 
+
+inline unsigned int CSP::Get_Mandatory_N()
+// returns the number of mandatory variables
+{
+  return mandatory_variable_number;
+}
 
 inline unsigned int CSP::Get_D()
 // returns the size of the largest domain

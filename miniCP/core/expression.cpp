@@ -56,6 +56,7 @@ Expression::Expression (operator_type oper, Expression * sub, int arity)
 		case XOR : varvalarity = arity; break;
 		case IFF : varvalarity = arity; break;
 		case SET : varvalarity = arity; break;
+		case INI : varvalarity = 3; break;
 		default  : varvalarity = 2;
 	}
 	
@@ -423,6 +424,7 @@ string Expression::Get_String ()
 					case IMP : res = "imp("; break;
 					case SET : res = "set("; break;
 					case IN  : res = "in("; break;
+					case INI : res = "ini("; break;
           case NOP : break;
 				}
 				
@@ -457,4 +459,198 @@ void Expression::Get_Postfix_Expression (vector<tuple<node_type,operator_type,in
               break;
 		case NIL: break;
 	}  
+}
+
+
+int Expression::Get_Minimal_Value (int min [], int max [])
+// returns the minimal value of the expression w.r.t. the minimal and maximal value of the related variables
+{
+  int n,m;
+	switch (type)
+	{
+		case VAL : return varvalarity;
+		case VAR : return min[varvalarity];
+		case OP:
+				switch (op)
+				{
+ 				  case NEG : return -subexpression[0].Get_Maximal_Value(min,max);
+					case ABS : 
+              return 0;
+					case ADD : return subexpression[0].Get_Minimal_Value(min,max) + subexpression[1].Get_Minimal_Value(min,max);
+					case SUM :
+              n = 0;
+							for (int i = 1; i < varvalarity; i++)
+								n += subexpression[i].Get_Minimal_Value(min,max);
+							return n;
+					case SUB : return subexpression[0].Get_Minimal_Value(min,max) - subexpression[1].Get_Maximal_Value(min,max);
+					case MUL :
+					case PROD : 
+              {
+                bool all_positive = true;
+                int prod_pos = 1;
+                int prod_mix = 1;
+                for(int i = 0 ; i < varvalarity ; i++)
+                {
+                  int vmin = subexpression[i].Get_Minimal_Value(min,max);
+                  int vmax = subexpression[i].Get_Maximal_Value(min,max);
+                  
+                  if (vmin < 0)
+                    all_positive = false;
+                  
+                  prod_pos *= vmin;
+                  
+                  if (abs(vmin) < abs(vmax))
+                    prod_mix *= vmax;
+                  else prod_mix *= vmin;
+                }
+                
+                if (all_positive)
+                  return prod_pos;
+                else return - abs(prod_mix);
+              }
+					case DIST : 
+              return 0;
+					case DIV : return subexpression[0].Get_Minimal_Value(min,max) / subexpression[1].Get_Maximal_Value(min,max);
+					case MOD : return 0;
+					case SQR : 
+              n = subexpression[0].Get_Minimal_Value(min,max);
+							return n*n;
+					case POW : 
+							int p;
+              n = subexpression[0].Get_Minimal_Value(min,max);
+							m = subexpression[1].Get_Minimal_Value(min,max);
+							p = 1;
+							for (int i = 0; i < m; i++)
+								p *= n;
+							return p;
+					case MIN : 
+              n = subexpression[0].Get_Minimal_Value(min,max);
+							for (int i = 1; i < varvalarity; i++)
+							{
+								m = subexpression[i].Get_Minimal_Value(min,max);
+								if (m < n)
+									n = m;
+							}
+							return n;
+					case MAX :
+							n = subexpression[0].Get_Minimal_Value(min,max);
+              for (int i = 1; i < varvalarity; i++)
+							{
+								m = subexpression[i].Get_Minimal_Value(min,max);
+								if (m > n)
+									n = m;
+							}
+							return n;
+					case SET : 
+							return varvalarity;
+					default: 
+							return 0;
+				}
+				break;
+		case NIL : return 0;				
+	}
+	return 0;
+}
+
+
+int Expression::Get_Maximal_Value (int min [], int max [])
+// returns the maximal value of the expression w.r.t. the minimal and maximal value of the related variables
+{
+  int n,m;
+	switch (type)
+	{
+		case VAL : return varvalarity;
+		case VAR : return max[varvalarity];
+		case OP:
+				switch (op)
+				{
+ 				  case NEG : return -subexpression[0].Get_Minimal_Value(min,max);
+					case ABS :
+              {
+                int val_min = abs(subexpression[0].Get_Minimal_Value(min,max));
+                int val_max = abs(subexpression[0].Get_Maximal_Value(min,max));
+              
+                if (val_min < val_max)
+                  return val_max;
+                else return val_min;
+              }
+					case ADD : return subexpression[0].Get_Maximal_Value(min,max) + subexpression[1].Get_Maximal_Value(min,max);
+					case SUM :
+              n = 0;
+							for (int i = 1; i < varvalarity; i++)
+								n += subexpression[i].Get_Maximal_Value(min,max);
+							return n;
+					case SUB : return subexpression[0].Get_Maximal_Value(min,max) - subexpression[1].Get_Minimal_Value(min,max);
+					case MUL :
+					case PROD : 
+              {
+                bool all_positive = true;
+                int prod_pos = 1;
+                int prod_mix = 1;
+                for(int i = 0 ; i < varvalarity ; i++)
+                {
+                  int vmin = subexpression[i].Get_Minimal_Value(min,max);
+                  int vmax = subexpression[i].Get_Maximal_Value(min,max);
+                  
+                  if (vmin < 0)
+                    all_positive = false;
+                  
+                  prod_pos *= vmax;
+                  
+                  if (abs(vmin) < abs(vmax))
+                    prod_mix *= vmax;
+                  else prod_mix *= vmin;                  
+                }
+                
+                if (all_positive)
+                  return prod_pos;
+                else return abs(prod_mix);
+              }
+					case DIST : 
+              n = subexpression[0].Get_Maximal_Value(min,max) - subexpression[1].Get_Minimal_Value(min,max);
+              m = subexpression[0].Get_Minimal_Value(min,max) - subexpression[1].Get_Maximal_Value(min,max);
+              if (abs(n) < abs(m))
+                return abs(m);
+              else
+                return abs(n);
+					case DIV : return subexpression[0].Get_Minimal_Value(min,max) / subexpression[1].Get_Maximal_Value(min,max);
+					case MOD : return subexpression[1].Get_Maximal_Value(min,max);
+					case SQR : 
+              n = subexpression[0].Get_Maximal_Value(min,max);
+							return n*n;
+					case POW : 
+							int p;
+              n = subexpression[0].Get_Maximal_Value(min,max);
+							m = subexpression[1].Get_Maximal_Value(min,max);
+							p = 1;
+							for (int i = 0; i < m; i++)
+								p *= n;
+							return p;
+					case MIN : 
+              n = subexpression[0].Get_Maximal_Value(min,max);
+							for (int i = 1; i < varvalarity; i++)
+							{
+								m = subexpression[i].Get_Minimal_Value(min,max);
+								if (m < n)
+									n = m;
+							}
+							return n;
+					case MAX :
+							n = subexpression[0].Get_Maximal_Value(min,max);
+              for (int i = 1; i < varvalarity; i++)
+							{
+								m = subexpression[i].Get_Maximal_Value(min,max);
+								if (m > n)
+									n = m;
+							}
+							return n;
+					case SET : 
+							return varvalarity;
+					default: 
+							return 1;
+				}
+				break;
+		case NIL : return 0;				
+	}
+	return 0;
 }

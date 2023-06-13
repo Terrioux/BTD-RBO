@@ -18,6 +18,7 @@ class Predicate_Constraint: public Constraint       /// This class implements th
 		Real_Tuple t;						///< the tuple used in Revise (the declaration of this member is only motivated by runtime reason)
     vector<tuple<node_type,operator_type,int>> postfix_relation;
     vector<int> values;
+    Support * support;
 	
 	protected:
 		Expression relation;		///< the relation related to the constraint
@@ -40,6 +41,7 @@ class Predicate_Constraint: public Constraint       /// This class implements th
 		void Get_Allowed_Tuple_List (list<int *> & list) override;	///< constructs the list of tuples allowed by the constraint
     int Evaluate (int t []);                        ///< returns the evaluation of the expression such that the value t[i] is the effective value of the variable i
     string Get_XCSP3_Expression() override;         ///< returns the string corresponding to the expression of the constraint in XCSP 3 format
+    void Reset_Support ();                          ///< reset the supports of the constraints
 };
 
 
@@ -59,6 +61,14 @@ inline Constraint * Predicate_Constraint::Duplicate ()
 // returns a pointer on a copy of the constraint
 {
 	return new Predicate_Constraint (*this);
+}
+
+
+inline void Predicate_Constraint::Reset_Support ()
+// reset the supports of the constraints
+{
+  if (support != 0)
+    support->Reset_Support(this);
 }
 
 #endif

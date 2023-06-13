@@ -12,6 +12,7 @@ Predicate_Constraint::Predicate_Constraint (vector<Variable *> & var, Expression
 {	
   relation.Get_Postfix_Expression (postfix_relation);
   values.resize (postfix_relation.size());
+  support = 0;
 }
 
 
@@ -300,6 +301,13 @@ int Predicate_Constraint::Evaluate (int t [])
                   last_value_index -= values[last_value_index-1]+1;
                 }
                 break;
+            case INI  :
+                {
+                  last_value_index -= 2;
+                  
+                  values[last_value_index] = (values[last_value_index+1] <= values[last_value_index+2]) && (values[last_value_index+2] <= values[last_value_index]);
+                }
+                break;
             case NOP: 
                 break;
           }
@@ -355,6 +363,8 @@ bool Predicate_Constraint::Is_Satisfied (int * t)
 bool Predicate_Constraint::Revise (CSP * pb, unsigned int var, Support * ls, Deletion_Stack * ds)
 // returns true if the application of arc-consistency on the constraint w.r.t. the variable var deletes a value in the domain of var, false otherwise
 {
+  support = ls;
+  
   int x = Get_Position (var);
   
 	Domain * dx = scope_var [x]->Get_Domain();
@@ -526,6 +536,7 @@ string Predicate_Constraint::Get_XCSP3_Expression()
               case IMP : expr += "imp("; break;
               case SET : expr += "set("; break;
               case IN  : expr += "in("; break;
+              case INI  : expr += "ini("; break;
               case NOP : break;
             }
             

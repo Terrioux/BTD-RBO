@@ -21,6 +21,7 @@ class Residue_Support: public Support     /// This class implements the residue 
 		// basic functions
 		void Resize (); 																											///< resizes the data structure
 		void Reset_Support (int num, int pos, int val); 											///< resets the support of the variable at the position pos in the constraint scope for the value v w.r.t. the constraint num
+    void Reset_Support (Constraint * c) override; 				  	            ///< resets all the supports related to the constraint c
 		void Change_Support (int num, int pos, int val, int * t, int arity); 	///< sets the support of the variable at the position pos in the constraint scope for the value v w.r.t. the constraint num to the tuple t
 		int * Get_Support (int num, int pos, int val);  			 								///< returns a reference to the support of the variable at the position pos in the constraint scope for the value v w.r.t. the constraint num
 		bool Continue_From_Scratch (); 																			  ///< returns true if the search for a support must continue from scratch, false if it can continue from the next tuple
@@ -35,6 +36,20 @@ class Residue_Support: public Support     /// This class implements the residue 
 inline void Residue_Support::Reset_Support (int num, int pos, int val)
 // resets the support of the variable at the position pos in the constraint scope for the value v w.r.t. the constraint num
 {
+}
+
+
+inline void Residue_Support::Reset_Support (Constraint * c)
+// resets all the supports related to the constraint c
+{
+  for (unsigned int pos = 0; pos < c->Get_Arity(); pos++)
+  {
+    for (unsigned int v = 0; v < c->Get_Scope_Variable(pos)->Get_Domain()->Get_Initial_Size(); v++)
+    {
+      delete [] support[c->Get_Num()][pos][v];
+      support[c->Get_Num()][pos][v] = 0;
+    }
+  }
 }
 
 

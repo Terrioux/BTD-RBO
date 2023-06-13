@@ -15,7 +15,7 @@
 //----------------------------
 
 
-Solver::Solver (CSP * inst, Variable_Heuristic * var_heur, Value_Heuristic * val_heur, AC * cc, Deletion_Stack * stack, Tree_Decomposition * TD, Root_Heuristic * root_heur, Cluster_Heuristic * cluster_heur, Restart_Policy * rp, Restart_Policy * local_rp, Root_Heuristic * rs_root_heur, Merge_Policy * local_merge_p, double limit): A (inst->Get_N())
+Solver::Solver (CSP * inst, Variable_Heuristic * var_heur, Value_Heuristic * val_heur, AC * cc, Deletion_Stack * stack, Tree_Decomposition * TD, Root_Heuristic * root_heur, Cluster_Heuristic * cluster_heur, Restart_Policy * rp, Restart_Policy * local_rp, Root_Heuristic * rs_root_heur, Merge_Policy * local_merge_p, double limit): A (inst->Get_Mandatory_N(),inst->Get_N())
 // constructs a solver in order to solve the instance inst by using the variable heuristic var_heur, the value heuristic val_heur, the consistency check,the deletion stack stack, the tree-decomposition TD, the root cluster heuristic root_heur, the cluster heuristic cluster_heur, the global restart policy rp, the local restart policy local_rp, the cluster root heuristic rs_root_heur for choosing the root cluster at each restart and the policy local_merge_p for merging clusters. The runtime is limited to limit. Child nodes rely on lexicographical trees.
 {
  	pb = inst;
@@ -177,12 +177,14 @@ Solver_State Solver::Solve ()
 		if (ct->Get_Nb_Vertices() == 1)
 		{
 			x = pb->Get_Variable (*(ct->Get_Cluster(0)->begin()));
-			var = x->Get_Num();
-			val = value_heuristic->Next_Value (A,var);
-			A.Assign(var,val);
-			Solving_Node_Counter++;
-      Solving_Decision_Counter++;
-
+      if (! x->Is_Auxiliary())
+      {
+        var = x->Get_Num();
+        val = value_heuristic->Next_Value (A,var);
+        A.Assign(var,val);
+        Solving_Node_Counter++;
+        Solving_Decision_Counter++;
+      }
 			result = 1;
 		}
 		else

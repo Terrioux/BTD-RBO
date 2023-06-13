@@ -36,23 +36,23 @@ class Domain               /// This class allows to represent domains with event
 		unsigned int Get_Initial_Size (); 		            ///< returns the initial size of the domain
 		unsigned int Get_Size (); 						            ///< returns the current size of the domain 
 		bool Is_Present (int val);						            ///< returns true if the value val is present in the domain, false otherwise
-		virtual int Get_Value (int real_val) = 0;			    ///< returns the value corresponding to the real value real_val if it exists, -1 otherwise
-    virtual int Get_Real_Value (int num) = 0;					///< returns the real value corresponding to the value num
+		virtual int Get_Value (long real_val) = 0;			  ///< returns the value corresponding to the real value real_val if it exists, -1 otherwise
+    virtual long Get_Real_Value (int num) = 0;				///< returns the real value corresponding to the value num
     int Get_Deleted_Value (int i);                    ///< returns the value of the i th deleted value
-    int Get_Deleted_Real_Value (int i);               ///< returns the real value of the i th deleted value
+    long Get_Deleted_Real_Value (int i);              ///< returns the real value of the i th deleted value
 		int Get_Remaining_Value (int i);			            ///< returns the value of the i th remaining value
-		int Get_Remaining_Real_Value (int i);	            ///< returns the real value corresponding to the i th remaining value
+		long Get_Remaining_Real_Value (int i);	          ///< returns the real value corresponding to the i th remaining value
 		void Filter_Value (int val);           	          ///< removes by filtering the value val
-    virtual void Filter_Value_Before (int real_val);  ///< removes by filtering all the values which are smaller than the real value val (val included)
-		virtual void Filter_Value_From (int real_val);   	///< removes by filtering all the values which are greater than the real value val (val included)
+    virtual void Filter_Value_Before (long real_val); ///< removes by filtering all the values which are smaller than the real value val (val included)
+		virtual void Filter_Value_From (long real_val);   ///< removes by filtering all the values which are greater than the real value val (val included)
 		void Assign (int val);			        		          ///< removes all the remaining values except the value val
     void WipeOut ();		         	                    ///< removes all the remaining values
 		void Unfilter_Value (int val); 			              ///< restores the value val deleted by filtering
 		void Restore (unsigned int new_size);	            ///< restores the last removed values in order to the domain has new_size remaining values (if new_size > size)
 		virtual int Get_Min ();								            ///< returns the lowest value currently in the domain
 		virtual int Get_Max ();								            ///< returns the largest value currently in the domain
-		int Get_Real_Min ();  								            ///< returns the lowest real value currently in the domain
-		int Get_Real_Max ();												      ///< returns the largest real value currently in the domain
+		long Get_Real_Min ();  								            ///< returns the lowest real value currently in the domain
+		long Get_Real_Max ();												      ///< returns the largest real value currently in the domain
 		int Next_Value (int i);								            ///< returns the available value following the i th value in the growing ordering if any, -1 otherwise
 		int Previous_Value (int i);						            ///< returns the available value preceding the i th value in the growing ordering if any, -1 otherwise
 };
@@ -108,7 +108,7 @@ inline int Domain::Get_Deleted_Value (int i)
 }
 
 
-inline int Domain::Get_Deleted_Real_Value (int i)
+inline long Domain::Get_Deleted_Real_Value (int i)
 // returns the real value of the i th deleted value
 /// \param[in] i the position of the whished value among the deleted values
 {
@@ -116,7 +116,7 @@ inline int Domain::Get_Deleted_Real_Value (int i)
 }
 
 
-inline int Domain::Get_Remaining_Real_Value (int i)
+inline long Domain::Get_Remaining_Real_Value (int i)
 // returns the real value corresponding to the i th remaining value
 /// \param[in] i the position of the whished real value among the remaining values
 {
@@ -165,7 +165,7 @@ inline void Domain::Filter_Value (int val)
 
 
 
-inline void Domain::Filter_Value_Before (int real_val)
+inline void Domain::Filter_Value_Before (long real_val)
 // removes by filtering all the values which are smaller than the real value real_val (real_val included)
 /// \param[in] real_val the real value from which the smaller values will be removed{
 {
@@ -209,7 +209,7 @@ inline void Domain::Filter_Value_Before (int real_val)
 }
 
 
-inline void Domain::Filter_Value_From (int real_val)
+inline void Domain::Filter_Value_From (long real_val)
 // removes by filtering all the values which are greater than the real value real_val (real_val included)
 /// \param[in] real_val the real value from which the greater real values will be removed
 {
@@ -342,14 +342,14 @@ inline int Domain::Get_Max ()
 }
 
 
-inline int Domain::Get_Real_Min ()
+inline long Domain::Get_Real_Min ()
 // returns the lowest real value currently in the domain
 {
   return Get_Real_Value(Get_Min());
 }
 
 
-inline int Domain::Get_Real_Max ()
+inline long Domain::Get_Real_Max ()
 // returns the largest real value currently in the domain
 {
   return Get_Real_Value(Get_Max());

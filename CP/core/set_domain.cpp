@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Set_Domain::Set_Domain (Event_Manager * evm, unsigned int num_var, set<int> & value_set): Domain (evm,num_var,value_set.size())
+Set_Domain::Set_Domain (Event_Manager * evm, unsigned int num_var, set<long> & value_set): Domain (evm,num_var,value_set.size())
 // constructs a domain defined by the set value_set
 {
   real_value.resize(value_set.size());

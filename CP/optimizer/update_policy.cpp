@@ -10,8 +10,10 @@ Update_Policy::Update_Policy(COP * ref_pb): A (ref_pb->Get_N())
 // constructs an update policy for the COP instance ref_pb
 {
   pb = ref_pb;
-  x_obj = pb->Get_Objective_Variable();
-  D_obj = x_obj->Get_Domain();
+  x_lb = pb->Get_Lower_Bound_Variable();
+  x_ub = pb->Get_Upper_Bound_Variable();
+  lb = x_lb->Get_Domain()->Get_Real_Min();
+  ub = x_ub->Get_Domain()->Get_Real_Min(); 
 }
 
 
@@ -20,7 +22,7 @@ Update_Policy::Update_Policy(COP * ref_pb): A (ref_pb->Get_N())
 //-----------------
 
 
-int Update_Policy::Update_Problem (int result, Assignment & solution, AC * ac, Deletion_Stack * ds)
+int Update_Policy::Update_Problem (int result, Assignment & solution, long cost, AC * ac, Deletion_Stack * ds)
 // updates the problem (if needed) before relaunching the solving and returns the result
 {
   if (result == 0)
@@ -31,17 +33,21 @@ int Update_Policy::Update_Problem (int result, Assignment & solution, AC * ac, D
   else
     if (result == 1)
     {
-      // we update the domain of the objective variable
-      int real_val_obj = D_obj->Get_Real_Value(solution.Get_Value(x_obj->Get_Num()));
-      D_obj->Filter_Value_From (real_val_obj);
-      if (D_obj->Get_Size() == 0)
-        result = solution.Get_Size() == 0 ? 0 : 1;
-      else
-        {
-          if (! ac->Achieve (pb,A,&nds,x_obj->Get_Num()))
-            result = solution.Get_Size() == 0 ? 0 : 1;
-          else result = -1;
-        }              
+      // we update the upper bound
+      ub = cost - 1;
+      
+      if (lb <= ub)
+      {
+        pb->Get_Event_Manager()->New_Level();
+        
+        pb->Update_Upper_Bound (ub);
+
+        if (! ac->Achieve (pb,A,&nds,x_ub->Get_Num()))
+          result = solution.Get_Size() == 0 ? 0 : 1;
+        else result = -1;
+      }
+      else result = solution.Get_Size() == 0 ? 0 : 1;
     }
+  
   return result;
 }

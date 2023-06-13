@@ -116,6 +116,7 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
     void buildConstraintElement(string id, vector<XVariable *> &list, XVariable *index, int startIndex, XCondition &xc)  override;  ///< creates an element global constraint to which a condition is imposed
 
     void buildConstraintElement(string id, vector<vector<XVariable*> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, XVariable* value) override;   ///< creates an element global constraint whose scope is a matrix 
+    void buildConstraintElement(string id, vector<vector<XVariable*> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, int value) override;
     void buildConstraintElement(string id, vector<vector<int> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, XVariable *value) override;  ///< creates an element global constraint whose scope is a matrix 
  
     void buildConstraintCumulative(string id, vector<XVariable *> &origins, vector<int> &lengths, vector<int> &heights, XCondition &xc) override;                 ///< creates a cumulative global constraint for which the lengths and the heights are integers
@@ -149,14 +150,18 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
     //~ void buildConstraintCircuit(string id, vector<XVariable *> &list, int startIndex, int size) override;
     //~ void buildConstraintCircuit(string id, vector<XVariable *> &list, int startIndex, XVariable *size) override;
         
-    //~ void buildConstraintPrecedence(string id, vector<XVariable *> &list, vector<int> values) override;
-    //~ void buildConstraintBinPacking(string id, vector<XVariable *> &list, vector<int> &sizes, XCondition &cond) override;
+    
     //~ void buildConstraintFlow(string id, vector<XVariable *> &list, vector<int> &balance, vector<int> &weights, vector<vector<int> > &arcs, XCondition &xc) override;
-    //~ void buildConstraintKnapsack(string id, vector<XVariable *> &list, vector<int> &weights, vector<int> &profits, int limit, XCondition &xc) override;
-    //~ void buildConstraintKnapsack(string id, vector<XVariable *> &list, vector<int> &weights, vector<int> &profits, XVariable *limit, XCondition &xc) override;
 
+    void buildConstraintPrecedence(string id, vector<XVariable *> &list, bool covered) override;
+    void buildConstraintPrecedence(string id, vector<XVariable *> &list, vector<int> values, bool covered) override;
 
-        
+    void buildConstraintBinPacking(string id, vector<XVariable *> &list, vector<int> &sizes, XCondition &cond) override;
+    void buildConstraintBinPacking(string id, vector<XVariable *> &list, vector<int> &sizes, vector<int> &capacities, bool load) override;
+    void buildConstraintBinPacking(string id, vector<XVariable *> &list, vector<int> &sizes, vector<XVariable*> &capacities, bool load) override;
+
+    void buildConstraintKnapsack(string id, vector<XVariable *> &list, vector<int> &weights, vector<int> &profits,XCondition weightsCondition, XCondition &profitCondition) override;
+    
 		void buildObjectiveMinimizeExpression(string expr) override;    ///< creates a minimum objective based on an expression
 		void buildObjectiveMaximizeExpression(string expr) override;    ///< creates a maximum objective based on an expression
 
@@ -173,6 +178,9 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
     void buildObjectiveMaximize(ExpressionObjective type, vector<Tree *> &trees, vector<int> &coefs) override;    ///< creates a maximum objective based on a weighted function and expressions
     void buildObjectiveMinimize(ExpressionObjective type, vector<Tree *> &trees) override;    ///< creates a minimum objective based on a weighted function and expressions
     void buildObjectiveMaximize(ExpressionObjective type, vector<Tree *> &trees) override;    ///< creates a maximum objective based on a weighted function and expressions
+
+    void buildObjectiveMinimize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs) override;
+    void buildObjectiveMaximize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs) override;
 
     //~ void buildAnnotationDecision(vector<XVariable*> &list) override;
 };

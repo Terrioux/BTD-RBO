@@ -4,34 +4,31 @@
 #ifndef COP_H
 #define COP_H
 
-#include "csp.h"
-
-enum Objective ///< type of objective we want to reach
-{
-  MINIMIZE,                      ///< the objective is a minimization
-  MAXIMIZE                       ///< the objective is a maximization
-};     
+#include "objective_function.h"
+#include "bound_domain.h"
 
 class COP: public CSP      /// This class allows to represent COP instances \ingroup core
 {
 	protected:
-    Objective objective;                            ///< the kind of objective
-    Variable * objective_variable;                  ///< the variable representing the objective we want to minimize
-    string criterion_information;                   ///< some information about the objective function
+    Objective_Function * objective_function;        ///< the objective function 
+    Variable * lower_bound_variable;                ///< the variable representing the lower bound of the objective
+    Variable * upper_bound_variable;                ///< the variable representing the upper bound of the objective
     
-				
 	public:
 		// constructors and destructor
 		COP (Event_Manager * em=0, string pb_name="");  ///< constructs an empty CSP whose name is pb_name and for which the events are managed by em
-		COP (COP & pb);						                      ///< constructs a CSP by copying the CSP pb
 		~COP ();	        				                      ///< destructor
 		
 		// basic functions
-    void Set_Objective (Objective obj, unsigned int num);  ///< sets the objective criterion to obj and the objective variable to the variable whose number is num
+    void Set_Objective_Function (Objective_Function * obj);   ///< sets the objective function
     Objective Get_Objective ();                     ///< returns the objective we want to reach
-    void Set_Criterion_Information (string info);   ///< sets to info the information about the objective function 
     string Get_Criterion_Information ();            ///< returns the information about the objective function
-    Variable * Get_Objective_Variable ();           ///< returns the objective variable
+    long Get_Cost (Assignment & A);                 ///< returns the value of the objective function for the assignment A
+    
+    Variable * Get_Lower_Bound_Variable ();         ///< returns the lower bound variable
+    Variable * Get_Upper_Bound_Variable ();         ///< returns the upper bound variable
+    void Update_Lower_Bound (long val);             ///< updates the value of the lower bound
+    void Update_Upper_Bound (long val);             ///< updates the value of the upper bound
 };
 
 
@@ -43,29 +40,58 @@ class COP: public CSP      /// This class allows to represent COP instances \ing
 inline Objective COP::Get_Objective ()
 // returns the objective we want to reach
 {
-  return objective;
-}
-
-
-inline void COP::Set_Criterion_Information (string info)
-// sets to info the information about the objective function 
-/// param[in] info the new information about the objective function
-{
-  criterion_information = info;
+  if (objective_function == 0)
+    throw ("Error: the objective function is not set");
+  return objective_function->Get_Objective();
 }
 
 
 inline string COP::Get_Criterion_Information ()
 // returns the information about the objective function
 {
-  return criterion_information;
+  if (objective_function == 0)
+    throw ("Error: the objective function is not set");
+  return objective_function->Get_Criterion_Information();
 }
 
 
-inline Variable * COP::Get_Objective_Variable ()
-// returns the objective variable
+inline long COP::Get_Cost (Assignment & A)
+// returns the value of the objective function for the assignment A
 {
-  return objective_variable;
+  if (objective_function == 0)
+    throw ("Error: the objective function is not set");
+  return objective_function->Get_Cost(A);  
+}
+
+inline Variable * COP::Get_Lower_Bound_Variable ()
+// returns the lower bound variable
+{
+  return lower_bound_variable;
+}
+
+
+inline Variable * COP::Get_Upper_Bound_Variable ()
+// returns the upper bound variable
+{
+  return upper_bound_variable;
+}
+
+
+inline void COP::Update_Lower_Bound (long val)
+// updates the value of the lower bound
+{
+  dynamic_cast<Bound_Domain*>(lower_bound_variable->Get_Domain())->Update_Value(val);
+  event_manager->Add_Event_Fix (lower_bound_variable->Get_Num(), 0);
+  objective_function->Update_From_Bounds ();
+}
+
+
+inline void COP::Update_Upper_Bound (long val)
+// updates the value of the upper bound
+{
+  dynamic_cast<Bound_Domain*>(upper_bound_variable->Get_Domain())->Update_Value(val);
+  event_manager->Add_Event_Fix (upper_bound_variable->Get_Num(), 0);
+  objective_function->Update_From_Bounds ();
 }
 
 #endif

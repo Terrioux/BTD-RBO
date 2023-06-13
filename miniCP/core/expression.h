@@ -41,6 +41,7 @@ typedef enum op_type    /// lists the different possible operators
   IMP,    ///< the logical implication
   SET,    ///< the set definition
   IN,     ///< the set operator in
+  INI,    ///< the set operator in for interval
   NOP     ///< the operator no-op
 } operator_type;
 
@@ -88,6 +89,8 @@ class Expression        /// This class implements mathematical expressions \ingr
 		int Get_Variable ();							///< returns the variable number of the root node of the expression if the root node is a variable node
 		int Get_Value ();									///< returns the value of the root node of the expression if the root node is a value node
     void Get_Postfix_Expression (vector<tuple<node_type,operator_type,int>> & postfix_expression);    ///< computes the equivalent postfix expression of the current expression
+    int Get_Minimal_Value (int min [], int max []);         ///< returns the minimal value of the expression w.r.t. the minimal and maximal value of the related variables
+    int Get_Maximal_Value (int min [], int max []);         ///< returns the maximal value of the expression w.r.t. the minimal and maximal value of the related variables
 };
 
 
@@ -226,6 +229,10 @@ inline int Expression::Evaluate (int t [])
 							for (int i = 0; i < m; i++)
 								if (n == subexpression[1].subexpression[i].Evaluate (t))
 									return 1;
+							return 0;
+					case INI :
+							if ((subexpression[1].subexpression[0].Evaluate (t) <= n) && (n <= subexpression[1].subexpression[1].Evaluate (t)))
+                return 1;
 							return 0;
           case NOP: return 0;
 				}

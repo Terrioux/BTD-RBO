@@ -18,12 +18,14 @@ class Variable        /// This class allows to represent variables \ingroup core
 		unsigned int num;  		///< the number of the variable
 		string name;          ///< the name of the variable
 		Domain * domain;	    ///< the domain related to the variable
-    bool is_auxiliary;    ///< is_auxiliary is set to true if the variable is auxiliary, false 
+    bool is_auxiliary;    ///< is_auxiliary is set to true if the variable is auxiliary (i.e. which is not considered by the variable heuristic), false 
+    bool is_initial;      ///< is_initial is set to true if the variable is present initially in the problem, false if it is added to make the modeling easier
 		
 	public :
 		// constructors and destructor
-    Variable (set<int> & values, unsigned int num_var, string ch, Event_Manager * event_manager, bool is_aux);  ///< constructs an enumerated variable whose domain is the set values, num is num_var and name is ch, is_aux is set to true if the variable is auxiliary
-    Variable (int a, int b, unsigned int num_var, string ch, Event_Manager * event_manager, bool is_aux);       ///< 
+    Variable (set<long> & values, unsigned int num_var, string ch, Event_Manager * event_manager, bool is_init, bool is_aux);  ///< constructs an enumerated variable whose domain is the set values, num is num_var and name is ch, is_init is set to true if the variable appears initially in the problem, is_aux is set to true if the variable is auxiliary
+    Variable (long a, long b, unsigned int num_var, string ch, Event_Manager * event_manager, bool is_init, bool is_aux);      ///< constructs an enumerated variable whose domain is [a,b], num is num_var and name is ch, is_init is set to true if the variable appears initially in the problem, is_aux is set to true if the variable is auxiliary
+    Variable (long val, unsigned int num_var, string ch, Event_Manager * event_manager);      ///< constructs a variable whose domain is restricted to val, num is num_var and name is ch, is_aux is set to true if the variable is auxiliary
 		Variable (Domain * d, string ch="", bool is_aux = false);	  ///< constructs an enumerated variable whose domain is d and name is ch, is_aux is set to true if the variable is auxiliary
 		Variable (Variable & v);								///< constructs an enumerated variable by copying the variable v
 		~Variable();			 											///< destructor
@@ -38,6 +40,7 @@ class Variable        /// This class allows to represent variables \ingroup core
 		Domain * Get_Domain ();    	    ///< returns the domain related to the variable
 		void Set_Num (unsigned int n); 	///< sets the number of the variable to n
 		void Set_Name (string n);    	 	///< sets the name of the variable to n
+    bool Is_Initial ();             ///< returns true if the variable is initial, false otherwise
     bool Is_Auxiliary ();           ///< returns true if the variable is auxiliary, false otherwise
 };
 
@@ -82,11 +85,20 @@ inline void Variable::Set_Num (unsigned int n)
 	num = n;
 }
 
+
 inline void Variable::Set_Name (string n)
 // sets the name of the variable to n
 {
   name = n;	
 }
+
+
+inline bool Variable::Is_Initial ()
+// returns true if the variable is initial, false otherwise
+{
+  return is_initial;
+}
+
 
 inline bool Variable::Is_Auxiliary ()
 // returns true if the variable is auxiliary, false otherwise

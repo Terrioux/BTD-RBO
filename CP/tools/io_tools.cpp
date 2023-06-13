@@ -34,12 +34,12 @@ void Print_XCSP3_Solution (CSP * pb, Assignment & solution)
   cout << "v <instantiation type=\"solution\">" << endl;
   cout << "v <list>";
   for (unsigned int i = 0; i < pb->Get_N(); i++)
-    if (! pb->Get_Variable(i)->Is_Auxiliary())
+    if (pb->Get_Variable(i)->Is_Initial())
       cout << " " << pb->Get_Variable(i)->Get_Name();
   cout << " </list>" << endl;
   cout << "v <values>";
   for (unsigned int i = 0; i < pb->Get_N(); i++)
-    if (! pb->Get_Variable(i)->Is_Auxiliary())
+    if (pb->Get_Variable(i)->Is_Initial())
       cout << " " << pb->Get_Variable(i)->Get_Domain()->Get_Real_Value (solution.Get_Value (i));
   cout << " </values>" << endl;
   cout << "v </instantiation>" << endl;  

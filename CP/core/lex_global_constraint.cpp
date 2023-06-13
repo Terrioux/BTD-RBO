@@ -48,155 +48,112 @@ bool Lex_Global_Constraint::Is_Satisfied (int * t)
 void Lex_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-  // we first compute alpha and beta
+  // we compute the number of assigned variables
+  unsigned int nb_assigned = 0;
+  for (unsigned int i = 0; i < arity; i++)
+    if (scope_var[i]->Get_Domain()->Get_Size() == 1)
+      nb_assigned++;
+
+  // we compute the first index from which the two vectors differ
   unsigned int alpha = 0;
 
-  unsigned int i = 0;
-  unsigned int j = tuple_size;
-    
-  while ((alpha < tuple_size) && (scope_var[i]->Get_Domain()->Get_Size() == 1) && (scope_var[j]->Get_Domain()->Get_Size() == 1) && (scope_var[i]->Get_Domain()->Get_Remaining_Real_Value(0) == scope_var[j]->Get_Domain()->Get_Remaining_Real_Value(0)))
-  {
-    i++;
-    j++;
+  while ((alpha < tuple_size - 1) && (scope_var[alpha]->Get_Domain()->Get_Size() == 1) && (scope_var[alpha+tuple_size]->Get_Domain()->Get_Size() == 1) && (scope_var[alpha]->Get_Domain()->Get_Remaining_Real_Value(0) == scope_var[alpha+tuple_size]->Get_Domain()->Get_Remaining_Real_Value(0)))
     alpha++;
-  }
-
-  if (alpha == tuple_size)
+  
+  unsigned int alpha0;
+  do
   {
-    // the two vectors are equal
-    if (! or_equal)
+    alpha0 = alpha;
+    
+    Domain * d1 = scope_var[alpha]->Get_Domain();
+    Domain * d2 = scope_var[alpha+tuple_size]->Get_Domain();
+    
+    bool modif = false;
+    
+    long int min = d1->Get_Real_Min();
+      
+    if (min > d2->Get_Real_Min())
     {
-      // the check fails
-      if (scope_var[i]->Get_Domain()->Get_Size() > 1)
-          pb->Set_Conflict (scope_var[i],this);
-      else
-        pb->Set_Conflict (scope_var[j],this);
+      modif = true;
+      min--;
     }
-    return;
-  }
-  else
-    {
-      unsigned int index = alpha;
-      int beta = -1;
-      
-      while ((index < tuple_size) && ((scope_var[i]->Get_Domain()->Get_Real_Min() < scope_var[j]->Get_Domain()->Get_Real_Max()) || ((or_equal) && (scope_var[i]->Get_Domain()->Get_Real_Min() == scope_var[j]->Get_Domain()->Get_Real_Max()))))
+    else
+      if ((min == d2->Get_Real_Min()) && (! or_equal))
       {
-        if (scope_var[i]->Get_Domain()->Get_Real_Min() == scope_var[j]->Get_Domain()->Get_Real_Max())
-        {
-          if (beta == -1)
-            beta = i;
-        }
-        else beta = -1;
-      
-        index++;
-        i++;
-        j++;
-      }
-      
-      if (index == tuple_size)
-        beta = tuple_size + 2;
-      else
-        if (beta == -1)
-          beta = index;
+        // we check whether the next variables 
+        unsigned int beta = alpha+1;
+        while ((beta < tuple_size) && (scope_var[alpha]->Get_Domain()->Get_Real_Min() >= scope_var[alpha]->Get_Domain()->Get_Real_Max()))
+          beta++;
           
-      if ((signed) alpha >= beta)
-      {
-        // the check fails
-        if (scope_var[i]->Get_Domain()->Get_Size() > 1)
-          pb->Set_Conflict (scope_var[i],this);
-        else
-          pb->Set_Conflict (scope_var[j],this);
-        return;
+        if (beta == tuple_size) 
+        {
+          modif = true;
+          
+        }
       }
-
-      // we look for inconsistent values
       
-      i = alpha;
-      j = alpha + tuple_size;
+    if (modif)
+    {
+      unsigned int old_size = d2->Get_Size();
 
-      bool stop;
-      do
+      ds->Add_Element (scope_var[alpha+tuple_size]);
+      d2->Filter_Value_Before (min);
+
+      if (d2->Get_Size() != old_size)
       {
-        stop = true;
-        
-        // we enforce the condition x_i < x_j (or x_i <= x_j depending on whether index+1 is equal to beta)
-        
-        Domain * d_i = scope_var[i]->Get_Domain();
-        Domain * d_j = scope_var[j]->Get_Domain();
-        
-        int ref_i = d_j->Get_Real_Max();
-        int ref_j = d_i->Get_Real_Min();
-
-        if ((signed) alpha + 1 < beta)
+        if (d2->Get_Size() == 0)
         {
-          ref_i++;
-          ref_j--;
+          pb->Set_Conflict (scope_var[alpha+tuple_size],this);
+          return;
         }
-        
-        // we filter the current variable of the first vector
-        unsigned old_size = d_i->Get_Size();
-        
-        ds->Add_Element (scope_var[i]);
-        d_i->Filter_Value_From (ref_i);
-
-        if (d_i->Get_Size() != old_size)
-        {
-          if (d_i->Get_Size() == 0)
-          {
-            pb->Set_Conflict (scope_var[i],this);
-            return;
-          }
-        }
-        
-        // we filter the current variable of the second vector
-        old_size = d_j->Get_Size();
-        
-        ds->Add_Element (scope_var[j]);
-        d_j->Filter_Value_Before (ref_j);
-
-        if (d_j->Get_Size() != old_size)
-        {
-          if (d_j->Get_Size() == 0)
-          {
-            pb->Set_Conflict (scope_var[j],this);
-            return;
-          }
-        }
-
-        if ((signed) alpha + 1 < beta)
-        {
-          // we try to update alpha
-          index = alpha;
-          while ((alpha < tuple_size) && ((signed) index < beta) && (scope_var[i]->Get_Domain()->Get_Size() == 1) && (scope_var[j]->Get_Domain()->Get_Size() == 1) && (scope_var[i]->Get_Domain()->Get_Remaining_Real_Value(0) == scope_var[j]->Get_Domain()->Get_Remaining_Real_Value(0)))
-          {
-            alpha++;
-            i++;
-            j++;
-          }
-                        
-          if (alpha == tuple_size)
-            return;
-          else
-              if ((signed) alpha == beta)
-              {
-                // the check fails
-                if (scope_var[i]->Get_Domain()->Get_Size() > 1)
-                  pb->Set_Conflict (scope_var[i],this);
-                else
-                  pb->Set_Conflict (scope_var[j],this);
-                return;
-              }
-              else 
-                {
-                  if (alpha != index)
-                    stop = false;
-                  else stop = true;
-                }
-        }
-        else stop = true;
       }
-      while (! stop);
-    }  
+    }
+    
+    modif = false;
+    
+    long int max = d2->Get_Real_Max();
+      
+    if (d1->Get_Real_Max() > max)
+    {
+      modif = true;
+      max++;
+    }
+    else
+      if ((max == d2->Get_Real_Min()) && (! or_equal))
+      {
+        // we check whether the next variables 
+        unsigned int beta = alpha+1;
+        while ((beta < tuple_size) && (scope_var[alpha]->Get_Domain()->Get_Real_Min() >= scope_var[alpha]->Get_Domain()->Get_Real_Max()))
+          beta++;
+          
+        if (beta == tuple_size) 
+        {
+          modif = true;
+          
+        }
+      }
+      
+    if (modif)
+    {
+      unsigned int old_size = d1->Get_Size();
+
+      ds->Add_Element (scope_var[alpha]);
+      d1->Filter_Value_From (max);
+
+      if (d1->Get_Size() != old_size)
+      {
+        if (d1->Get_Size() == 0)
+        {
+          pb->Set_Conflict (scope_var[alpha],this);
+          return;
+        }
+      }
+    }
+    
+    while ((alpha < tuple_size) && (scope_var[alpha]->Get_Domain()->Get_Size() == 1) && (scope_var[alpha+tuple_size]->Get_Domain()->Get_Size() == 1) && (scope_var[alpha]->Get_Domain()->Get_Remaining_Real_Value(0) == scope_var[alpha+tuple_size]->Get_Domain()->Get_Remaining_Real_Value(0)))
+      alpha++;
+  }
+  while ((alpha < tuple_size) && (alpha0 != alpha));
 }
 
 

@@ -17,8 +17,10 @@ class Update_Policy     /// this class allows to represent the way we update the
 {
   protected:
     COP * pb;          ///< the instance to which the update policy refers to  
-    Variable * x_obj;  ///< the objective variable
-    Domain * D_obj;    ///< the domain of the objective variable
+    long lb;           ///< the lower bound
+    long ub;           ///< the upper bound
+    Variable * x_lb;   ///< the lower bound variable
+    Variable * x_ub;   ///< the upper bound variable
     Assignment A;      ///< an empty assignment used for the AC enforcement
     No_Deletion_Stack nds;    ///< a deletion stack for the AC enforcement
 
@@ -30,7 +32,7 @@ class Update_Policy     /// this class allows to represent the way we update the
     // basic functions
     virtual bool Record_Nogoods ();            ///< returns true if nld-nogoods must be recorded when finding a solution, false otherwise
     virtual int Initialize_Problem (AC * ac, Deletion_Stack * ds);   ///< initializes the problem (if needed) before launching the solving and returns the result
-    virtual int Update_Problem (int result, Assignment & solution, AC * ac, Deletion_Stack * ds);   ///< updates the problem (if needed) before relaunching the solving and returns the result
+    virtual int Update_Problem (int result, Assignment & solution, long cost, AC * ac, Deletion_Stack * ds);   ///< updates the problem (if needed) before relaunching the solving and returns the result
 };
 
 //--------------------------------

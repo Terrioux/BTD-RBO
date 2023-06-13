@@ -83,6 +83,7 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
     void buildConstraintElement(string id, vector<XVariable *> &list, XVariable *index, int startIndex, XCondition &xc)  override;  ///< creates an element global constraint to which a condition is imposed
 
     void buildConstraintElement(string id, vector<vector<XVariable*> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, XVariable* value) override;   ///< creates an element global constraint whose scope is a matrix 
+    void buildConstraintElement(string id, vector<vector<XVariable*> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, int value) override;
     void buildConstraintElement(string id, vector<vector<int> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, XVariable *value) override;  ///< creates an element global constraint whose scope is a matrix 
     
     //~ void buildConstraintStretch(string id, vector<XVariable *> &list, vector<int> &values, vector<XInterval> &widths) override;
@@ -120,6 +121,8 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
     void buildObjectiveMinimize(ExpressionObjective type, vector<Tree *> &trees) override;    ///< creates a minimum objective based on a weighted function and expressions
     void buildObjectiveMaximize(ExpressionObjective type, vector<Tree *> &trees) override;    ///< creates a maximum objective based on a weighted function and expressions
 
+    void buildObjectiveMinimize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs) override;
+    void buildObjectiveMaximize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs) override;
     //~ void buildAnnotationDecision(vector<XVariable*> &list) override;
 };
 

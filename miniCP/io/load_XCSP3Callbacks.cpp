@@ -26,6 +26,8 @@
 #include "element_global_constraint.h"
 #include "index_element_global_constraint.h"
 
+#include "no_overlap_global_constraint.h"
+
 #include "all_different_global_constraint.h"
 #include "all_different_except_global_constraint.h"
 #include "positive_compact_table_extension_constraint.h"
@@ -33,6 +35,13 @@
 #include "negative_compact_table_extension_constraint.h"
 
 #include "equal_binary_constraint.h"
+
+#include "expression_objective_function.h"
+#include "maximum_objective_function.h"
+#include "minimum_objective_function.h"
+#include "nvalue_objective_function.h"
+#include "sum_objective_function.h"
+
 
 #include "expression_tools.h"
 
@@ -68,14 +77,15 @@ void Load_XCSP3Callbacks::beginInstance(InstanceType type)
 
 template<class T>
 void displayList(vector<T> &list, string separator = " ") {
-    if(list.size() > 8) {
-        for(int i = 0 ; i < 3 ; i++)
-            cout << list[i] << separator;
-        cout << " ... ";
-        for(unsigned int i = list.size() - 4 ; i < list.size() ; i++)
-            cout << list[i] << separator;
-        cout << endl;
-        return;
+    if (list.size() > 8) 
+    {
+      for(int i = 0 ; i < 3 ; i++)
+        cout << list[i] << separator;
+      cout << " ... ";
+      for(unsigned int i = list.size() - 4 ; i < list.size() ; i++)
+        cout << list[i] << separator;
+      cout << endl;
+      return;
     }
     for(unsigned int i = 0 ; i < list.size() ; i++)
         cout << list[i] << separator;
@@ -109,7 +119,7 @@ void Load_XCSP3Callbacks::buildVariableInteger(string id, int minValue, int maxV
 void Load_XCSP3Callbacks::buildVariableInteger(string id, vector<int> &values) 
 // creates an integer variable whose domain contains the integer values in vector values
 {
-  set<int> value_set;
+  set<long> value_set;
   
 	for(unsigned int i = 0; i < values.size() ; i++)
 		value_set.insert (values[i]);
@@ -169,29 +179,27 @@ void Tree_to_Predicate (CSP * pb, string id, Tree * tree, vector<Variable *> & s
   vector<Variable *> scope;
   map<string,int> min, max;
 
-  for (vector<string>::iterator iter = scope_str.begin(); iter != scope_str.end(); iter++)
-  {
-    Variable * x = pb->Get_Variable(*iter);
-    scope.push_back (x);
-    
-    Domain * d = x->Get_Domain();
-    min.insert (make_pair(*iter,d->Get_Real_Value(d->Get_Min())));
-    max.insert (make_pair(*iter,d->Get_Real_Value(d->Get_Max())));
-  }
-  
-  // we create new intermediary variable
-  string id_var = id+"_"+to_string (pb->Get_N());
-  
-  pb->Add_Variable (tree->get_min(min,max),tree->get_max(min,max),id_var,true);
-  
-  Variable * x = pb->Get_Variable(id_var);
-  
-  scope.push_back (x);
-  
-  scope_var.push_back (x);
-  
-  string expr = "eq(" + tree->get_expr() + "," + id_var +")";
-  Expression relation = string_to_expression (expr,pb,scope);
+      for (vector<string>::iterator iter = scope_str.begin(); iter != scope_str.end(); iter++)
+      {
+        Variable * x = pb->Get_Variable(*iter);
+        scope.push_back (x);
+        
+        Domain * d = x->Get_Domain();
+        min.insert (make_pair(*iter,d->Get_Real_Value(d->Get_Min())));
+        max.insert (make_pair(*iter,d->Get_Real_Value(d->Get_Max())));
+      }
+      
+      // we create new intermediary variable
+      string id_var = id+"_"+to_string (pb->Get_N());
+      
+      Variable * x = pb->Add_Variable (tree->get_min(min,max),tree->get_max(min,max),id_var,false,true);
+      
+      scope.push_back (x);
+      
+      scope_var.push_back (x);
+      
+      string expr = "eq(" + tree->get_expr() + "," + id_var +")";
+      Expression relation = string_to_expression (expr,pb,scope);
 
   pb->Add_Constraint (new Predicate_Constraint(scope,relation),false);  
 }
@@ -208,10 +216,7 @@ void convert_int_list (CSP * pb, vector<int> & ilist, string id, vector<Variable
 // converts a list of integers to a list of auxiliary variables
 {
 	for (vector<int>::iterator iter = ilist.begin(); iter != ilist.end(); iter++)
-  {
-    pb->Add_Variable(*iter,*iter,id,true);
-		list.push_back (pb->Get_Variable(pb->Get_N()-1));
-  }
+    list.push_back (pb->Add_Variable(*iter,*iter,id,true));
 }
 
 
@@ -364,7 +369,7 @@ void Load_XCSP3Callbacks::buildConstraintExtension(string id, XVariable *variabl
 // creates an extension constraint where variable is the single variable in the scope, tuples the list of tuples which are allowad if support is set to true, forbidden otherwise (hasStar is true if * is allowed in tuples)
 {
   if (hasStar)
-    throw ("Error: hasStar value is not supported yet");
+    throw ("Error: impossible hasStar value");
 
 	// we first consider the scope of the constraint
 	Variable * x;
@@ -532,7 +537,7 @@ void Load_XCSP3Callbacks::buildConstraintPrimitive(string id, OrderType op, XVar
 		case XCSP3Core::GE: expression = "ge"; break;
 		case XCSP3Core::EQ: expression = "eq"; break;
 		case XCSP3Core::NE: expression = "ne"; break;
-		default: throw ("Error: operator is not supported yet");
+		default: throw ("Error: operator not allowed");
   }
   
   expression += "(sub("+x->id+","+y->id+"),"+to_string(-k)+")";
@@ -570,7 +575,7 @@ void Load_XCSP3Callbacks::buildConstraintPrimitive(string id, OrderType op, XVar
           v = d->Next_Value(v);
         }
         break;
-		default: throw ("Error: operator is not supported yet");
+		default: throw ("Error: operator not allowed");
   }
 }
 
@@ -616,7 +621,7 @@ void Load_XCSP3Callbacks::buildConstraintPrimitive(string id, XVariable *x, bool
     }
 
 }
-
+    
 
 void Load_XCSP3Callbacks::buildConstraintAlldifferent(string id, vector<XVariable *> &list)
 // creates an all-diff global constraint
@@ -634,7 +639,7 @@ void Load_XCSP3Callbacks::buildConstraintAlldifferent(string id, vector<XVariabl
 void Load_XCSP3Callbacks::buildConstraintAlldifferentExcept(string id, vector<XVariable *> &list, vector<int> &except)
 {
   if (except.size() != 1)
-    throw ("Error: multiple values are not supported yet");
+    throw ("Error: a single value is allowed as an exception value for an allDifferent with exception");
   
 	// we first consider the scope of the constraint
 	vector<Variable *> scope;
@@ -812,6 +817,48 @@ void Load_XCSP3Callbacks::buildConstraintSum(string id, vector<XVariable *> &lis
 }
 
 
+Variable * Add_Weighted_Variable (CSP * pb, Variable * y, Variable * z)
+// creates an auxiliary variable x s.t. x = y * z for the instance pb
+{
+  vector<Variable *> scope_mul;
+  
+  // we create new intermediary variable
+  string id_var = "prod_"+y->Get_Name()+"_"+z->Get_Name()+"_"+to_string (pb->Get_N());
+  
+  scope_mul.push_back(pb->Get_Variable (y->Get_Name()));
+  scope_mul.push_back(pb->Get_Variable (z->Get_Name()));
+  
+  Domain * dv = scope_mul[0]->Get_Domain();
+  Domain * dc = scope_mul[1]->Get_Domain();
+  
+  set<long> values;
+  
+  for (unsigned int j = 0; j < dv->Get_Initial_Size(); j++)
+    for (unsigned int k = 0; k < dc->Get_Initial_Size(); k++)
+      values.insert(dv->Get_Real_Value(j) * dc->Get_Real_Value(k));
+  
+  Variable * x = pb->Add_Variable (values,id_var,false,true);
+  
+  scope_mul.push_back (x);
+  
+  // we link the corresponding variables by a product constraint
+
+  Expression expr[2];
+  expr[0] = Expression (VAR,0);
+  expr[1] = Expression (VAR,1);
+  
+  Expression expr2[2];
+  expr2[0] = Expression (MUL,expr,2);
+  expr2[1] = Expression (VAR,2);
+  
+  Expression e = Expression (EQ,expr2,2);
+  
+  pb->Add_Constraint (new Predicate_Constraint(scope_mul,e),false);
+  
+  return x;
+}
+
+
 void Load_XCSP3Callbacks::buildConstraintSum(string id, vector<XVariable *> &list, vector<XVariable *> &coeffs, XCondition &cond)
 // creates a weighted sum global constraint whose scope is provided by list and for which coeffs corresponds to the list of variable coefficients and cond is the considered condition
 {
@@ -821,46 +868,7 @@ void Load_XCSP3Callbacks::buildConstraintSum(string id, vector<XVariable *> &lis
   unsigned int arity = list.size();
   
   for (unsigned int i = 0; i < arity; i++)
-  {
-    vector<Variable *> scope_mul;
-    
-    // we create new intermediary variable
-    string id_var = id+"_"+to_string (pb->Get_N());
-    
-    scope_mul.push_back(pb->Get_Variable (list[i]->id));
-    scope_mul.push_back(pb->Get_Variable (coeffs[i]->id));
-    
-    Domain * dv = scope_mul[0]->Get_Domain();
-    Domain * dc = scope_mul[1]->Get_Domain();
-    
-    set<int> values;
-    
-    for (unsigned int j = 0; j < dv->Get_Initial_Size(); j++)
-      for (unsigned int k = 0; k < dc->Get_Initial_Size(); k++)
-        values.insert(dv->Get_Real_Value(j) * dc->Get_Real_Value(k));
-		
-    pb->Add_Variable (values,id_var,true);
-    
-    Variable * x = pb->Get_Variable(id_var);
-    
-    scope_mul.push_back (x);
-    scope.push_back (x);
-  
-    
-    // we link the corresponding variables by a product constraint
-
-    Expression expr[2];
-    expr[0] = Expression (VAR,0);
-    expr[1] = Expression (VAR,1);
-    
-    Expression expr2[2];
-    expr2[0] = Expression (MUL,expr,2);
-    expr2[1] = Expression (VAR,2);
-    
-    Expression e = Expression (EQ,expr2,2);
-    
-    pb->Add_Constraint (new Predicate_Constraint(scope_mul,e),false);
-  }
+    scope.push_back (Add_Weighted_Variable(pb, pb->Get_Variable(list[i]->id), pb->Get_Variable(coeffs[i]->id)));
 	
 	if (cond.operandType == XCSP3Core::VARIABLE)
 	{
@@ -1011,31 +1019,42 @@ void Create_Relationship (CSP * pb, string id_var1, XCondition &xc, string id_va
 }
 
 
-//~ void Load_XCSP3Callbacks::buildConstraintCardinality(string id, vector<XVariable *> &list, vector<XVariable *> values, vector<int> &occurs,
-                                                     //~ bool closed) {
-    //~ cout << "\n    Cardinality constraint (var values, int occurs)  constraint closed: " << closed << endl;
-    //~ cout << "        ";displayList(list);
-    //~ cout << "        values:";displayList(values);
-    //~ cout << "        occurs:";displayList(occurs);
-//~ }
+void NValues_Constraint (CSP * pb,string id, vector<XVariable *> &list, XCondition &xc, int except_val, bool with_exception)
+{
+  // we look for the target variable that is the variable which is equal to nValues(...)
+  Variable * target_variable;
+  
+	if (xc.operandType == XCSP3Core::VARIABLE)
+    target_variable = pb->Get_Variable(xc.var);
+  else
+    if (xc.op != XCSP3Core::IN)
+    {
+      string id_var = id+"_"+to_string (pb->Get_N());
+      
+      target_variable =  pb->Add_Variable (xc.val,xc.val,id_var,false,true);
+    }
 
+  // we then consider the scope of the constraint
+	vector<Variable *> scope;
 
-//~ void Load_XCSP3Callbacks::buildConstraintCardinality(string id, vector<XVariable *> &list, vector<XVariable *> values, vector<XVariable *> &occurs,
-                                                     //~ bool closed) {
-    //~ cout << "\n    Cardinality constraint (var values, var occurs)  constraint closed: " << closed << endl;
-    //~ cout << "        ";displayList(list);
-    //~ cout << "        values:";displayList(values);
-    //~ cout << "        occurs:";displayList(occurs);
-//~ }
+  if (xc.op == XCSP3Core::EQ)
+    scope.push_back(target_variable);
+  else
+    {
+      string id_var = "nvalues_"+id+"_"+to_string (pb->Get_N());
 
+      scope.push_back(pb->Add_Variable (0,list.size(),id_var,false,true));
+      
+      Create_Relationship (pb, id_var, xc, target_variable->Get_Name());
+    }
 
-//~ void Load_XCSP3Callbacks::buildConstraintCardinality(string id, vector<XVariable *> &list, vector<XVariable *> values, vector<XInterval> &occurs,
-                                                     //~ bool closed) {
-    //~ cout << "\n    Cardinality constraint (var values, interval occurs)  constraint closed: " << closed << endl;
-    //~ cout << "        ";displayList(list);
-    //~ cout << "        values:";displayList(values);
-    //~ cout << "        occurs:";displayList(occurs);
-//~ }
+	for (vector<XVariable*>::iterator iter = list.begin(); iter != list.end(); iter++)
+		scope.push_back (pb->Get_Variable((*iter)->id));
+
+  if (with_exception)
+    throw ("Error: NValues constraint with exception is not supported");
+  else pb->Add_Constraint (new NValues_Global_Constraint (scope),false);
+}
 
 
 
@@ -1051,9 +1070,7 @@ void Minimum_Maximum_Constraint (CSP * pb,string id, vector<Variable *> &scope, 
     {
       string id_var = id+"_"+to_string (pb->Get_N());
       
-      pb->Add_Variable (xc.val,xc.val,id_var,true);
-    
-      target_variable = pb->Get_Variable(id_var);
+      target_variable = pb->Add_Variable (xc.val,xc.val,id_var,false,true);
     }
 
   // we then consider the scope of the constraint
@@ -1063,7 +1080,7 @@ void Minimum_Maximum_Constraint (CSP * pb,string id, vector<Variable *> &scope, 
     {
       string id_var = id+"_aux_"+to_string (pb->Get_N());
 
-      set<int> values;
+      set<long> values;
       for (vector<Variable*>::iterator iter = scope.begin(); iter != scope.end(); iter++)
       {
         Domain * d = (*iter)->Get_Domain();
@@ -1072,9 +1089,7 @@ void Minimum_Maximum_Constraint (CSP * pb,string id, vector<Variable *> &scope, 
           values.insert(d->Get_Remaining_Real_Value(i));
       }
       
-      pb->Add_Variable (values,id_var,true);
-    
-      scope.insert(scope.begin(),pb->Get_Variable(id_var));
+      scope.insert(scope.begin(),pb->Add_Variable (values,id_var,false,true));
       
       Create_Relationship (pb, id_var, xc, target_variable->Get_Name());
     }
@@ -1183,7 +1198,7 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<XVariable *> 
 // creates a element global constraint whose scope is provided by list with a constant value provided by value and index as a index variable 
 {
   if (rank != XCSP3Core::ANY)
-    throw ("Error: rank  is not supported yet");
+    throw ("Error: rank must be equal to any");
 
 	// we first consider the scope of the constraint
 	vector<Variable *> scope;
@@ -1248,7 +1263,7 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<XVariable *> 
 // creates an element global constraint to which a condition is imposed
 {
   if (startIndex != 0)
-    throw ("Error: The index different from 0 is not supported yet");
+    throw ("Error: The index should start from 0 in the element global constraint");
 
   // we first consider the scope of the constraint
 	vector<Variable *> scope;
@@ -1269,9 +1284,7 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<XVariable *> 
   }
   
   string elt_var = "element_var"+id+to_string(pb->Get_N());
-  pb->Add_Variable(min,max,elt_var,true);
-  
-  scope.push_back (pb->Get_Variable(pb->Get_N()-1));
+  scope.push_back (pb->Add_Variable(min,max,elt_var,false,true));
   
   // we create a constraint related to the condition xc
   // we look for the target variable that is the variable which is equal to Element(...)
@@ -1284,11 +1297,9 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<XVariable *> 
     {
       string id_var = "element_cmp"+id+"_"+to_string (pb->Get_N());
       
-      pb->Add_Variable (xc.val,xc.val,id_var,true);
-    
-      target_variable = pb->Get_Variable(id_var);
+      target_variable = pb->Add_Variable (xc.val,xc.val,id_var,false,true);
     }
-    else throw ("Error: The operator IN is not supported yet");
+    else throw ("Error: The operator IN is not take into account");
 
   // we then consider the scope of the constraint
   Create_Relationship (pb, elt_var, xc, target_variable->Get_Name());
@@ -1303,7 +1314,7 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<XVaria
 // creates an element global constraint whose scope is a matrix 
 {
   if ((startRowIndex != 0) || (startColIndex != 0))
-    throw ("Error: the index is not supported yet");
+    throw ("Error: The index should start from 0 in the element global constraint");
 
   // we first consider the scope of the constraint by considering a vector instead of a matrix.
 	vector<Variable *> scope;
@@ -1312,9 +1323,8 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<XVaria
     convert_variable_list (pb,*iter,scope);
     
   // we create a new variable to represent the index variable
-  pb->Add_Variable(0,scope.size()-1,"index_"+id+to_string(pb->Get_N()),true);
+  Variable * index = pb->Add_Variable(0,scope.size()-1,"index_"+id+to_string(pb->Get_N()),false,true);
 
-  Variable * index = pb->Get_Variable(pb->Get_N()-1);
   scope.push_back (index);
   
   // we link the index variable to the row and column indexes
@@ -1332,11 +1342,42 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<XVaria
 }
 
 
+void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<XVariable*> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, int value)
+{
+  if ((startRowIndex != 0) || (startColIndex != 0))
+    throw ("Error: The index should start from 0 in the element global constraint");
+
+  // we first consider the scope of the constraint by considering a vector instead of a matrix.
+	vector<Variable *> scope;
+
+  for (vector<vector<XVariable*>>::iterator iter = matrix.begin(); iter != matrix.end(); iter++)
+    convert_variable_list (pb,*iter,scope);
+    
+  // we create a new variable to represent the index variable
+  Variable * index = pb->Add_Variable(0,scope.size()-1,"index_"+id+to_string(pb->Get_N()),false,true);
+
+  scope.push_back (index);
+  
+  // we link the index variable to the row and column indexes
+  string expr = "eq(" + index->Get_Name() + ",add(mul(" + to_string (matrix[0].size()) + "," + rowIndex->id + ")," + colIndex->id + "))";
+  
+  vector<Variable *> scope_eq;
+  Expression e = string_to_expression (expr,pb,scope_eq);
+  pb->Add_Constraint(new Predicate_Constraint(scope_eq,e),false);
+    
+  // we add the value variable to the scope
+  scope.push_back (pb->Add_Variable(value,value,id+"_value"+to_string(pb->Get_N()),false,true));
+  
+  // we create the constraint
+  pb->Add_Constraint (new Index_Element_Global_Constraint (scope),false);  
+}
+
+
 void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<int> > &matrix, int startRowIndex, XVariable *rowIndex, int startColIndex, XVariable* colIndex, XVariable *value)
 // creates an element global constraint whose scope is a matrix 
 {
   if ((startRowIndex != 0) || (startColIndex != 0))
-    throw ("Error: The index  is not supported yet");
+    throw ("Error: The index should start from 0 in the element global constraint");
 
   // we first consider the scope of the constraint
 	vector<Variable *> scope;
@@ -1369,28 +1410,6 @@ void Load_XCSP3Callbacks::buildConstraintElement(string id, vector<vector<int> >
 }
 
 
-
-//~ void Load_XCSP3Callbacks::buildConstraintStretch(string id, vector<XVariable *> &list, vector<int> &values, vector<XInterval> &widths) {
-    //~ cout << "\n    stretch constraint" << endl;
-    //~ cout << "        ";displayList(list);
-    //~ cout << "        values :";displayList(values);
-    //~ cout << "        widths:";displayList(widths);
-//~ }
-
-
-//~ void Load_XCSP3Callbacks::buildConstraintStretch(string id, vector<XVariable *> &list, vector<int> &values, vector<XInterval> &widths, vector<vector<int> > &patterns) {
-    //~ cout << "\n    stretch constraint (with patterns)" << endl;
-    //~ cout << "        ";displayList(list);
-    //~ cout << "        values :";displayList(values);
-    //~ cout << "        widths:";displayList(widths);
-    //~ cout << "        patterns";
-    //~ for(unsigned int i = 0 ; i < patterns.size() ; i++)
-        //~ cout << "(" << patterns[i][0] << "," << patterns[i][1] << ") " ;
-    //~ cout << endl;
-//~ }
-
-
-  
 void Load_XCSP3Callbacks::buildConstraintInstantiation(string id, vector<XVariable *> &list, vector<int> &values)
 // creates an instantiation constraint
 {
@@ -1404,35 +1423,18 @@ void Load_XCSP3Callbacks::buildConstraintInstantiation(string id, vector<XVariab
 }
 
 
+
 //*********************
 // Objective functions
 //*********************
 
 
-void Expression_Objective (COP * pb, string expr)
+void Expression_Objective (COP * pb, string expr, enum Objective obj)
 {
   vector<Variable*> scope;
-  Expression e = string_to_expression (expr,pb,scope);
-  map<string,int> min,max;
+  Expression e = string_to_expression (expr,pb,scope);  
   
-  Tree tree (expr);
-  for (vector<Variable *>::iterator iter = scope.begin(); iter != scope.end(); iter++)
-  {
-    Domain * d = (*iter)->Get_Domain();
-    min.insert (make_pair((*iter)->Get_Name(),d->Get_Real_Value(d->Get_Min())));
-    max.insert (make_pair((*iter)->Get_Name(),d->Get_Real_Value(d->Get_Max())));
-  }
-
-  // we create the objective variable
-  pb->Add_Variable (tree.get_min(min,max),tree.get_max(min,max),"obj",true);
-  
-  scope.clear();
-  
-  expr = "eq(" + pb->Get_Variable(pb->Get_N()-1)->Get_Name() + "," + expr +")";
-  e = string_to_expression (expr,pb,scope);
-  pb->Add_Constraint(new Predicate_Constraint(scope,e),false);
-  
-  pb->Set_Criterion_Information ("expression "+to_string(scope.size()-1));
+  pb->Set_Objective_Function (new Expression_Objective_Function(obj,scope,e));
 }
 
 
@@ -1440,10 +1442,7 @@ void Load_XCSP3Callbacks::buildObjectiveMinimizeExpression(string expr)
 // creates a minimum objective based on an expression
 {
   if (dynamic_cast<COP*>(pb) != 0)
-  {
-    Expression_Objective (dynamic_cast<COP*>(pb),expr);
-    dynamic_cast<COP*>(pb)->Set_Objective(MINIMIZE,pb->Get_N()-1);
-  }
+    Expression_Objective (dynamic_cast<COP*>(pb),expr,MINIMIZE);
 }
 
 
@@ -1451,10 +1450,7 @@ void Load_XCSP3Callbacks::buildObjectiveMaximizeExpression(string expr)
 // creates a maximum objective based on an expression
 {
   if (dynamic_cast<COP*>(pb) != 0)
-  {
-    Expression_Objective (dynamic_cast<COP*>(pb),expr);
-    dynamic_cast<COP*>(pb)->Set_Objective(MAXIMIZE,pb->Get_N()-1);
-  }
+    Expression_Objective (dynamic_cast<COP*>(pb),expr,MAXIMIZE);
 }
 
 
@@ -1462,10 +1458,7 @@ void Load_XCSP3Callbacks::buildObjectiveMinimizeVariable(XVariable *x)
 // creates a minimum objective based on a variable
 {
   if (dynamic_cast<COP*>(pb) != 0)
-  {
-    dynamic_cast<COP*>(pb)->Set_Criterion_Information ("variable 1");
-    dynamic_cast<COP*>(pb)->Set_Objective(MINIMIZE,pb->Get_Variable(x->id)->Get_Num());
-  }
+    Expression_Objective (dynamic_cast<COP*>(pb), x->id, MINIMIZE);
 }
 
 
@@ -1473,202 +1466,80 @@ void Load_XCSP3Callbacks::buildObjectiveMaximizeVariable(XVariable *x)
 // creates a maximum objective based on a variable
 {
   if (dynamic_cast<COP*>(pb) != 0)
-  {
-    dynamic_cast<COP*>(pb)->Set_Criterion_Information ("variable 1");
-    dynamic_cast<COP*>(pb)->Set_Objective(MAXIMIZE,pb->Get_Variable(x->id)->Get_Num());
-  }
+    Expression_Objective (dynamic_cast<COP*>(pb), x->id, MAXIMIZE);
 }
 
 
-void Sum_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs)
-{
-  // we add a variable in order to represent the objective variable and a constraint for expressing the sum objective
-  int min = 0;
-  int max = 0;
-  int i = 0;
-  for (vector<Variable*>::iterator iter = scope.begin(); iter != scope.end(); iter++)
-  {
-    Domain * d = (*iter)->Get_Domain();
-    
-    if (coefs[i] > 0)
-    {
-      min += coefs[i] * d->Get_Real_Value(d->Get_Min());
-      max += coefs[i] * d->Get_Real_Value(d->Get_Max());
-    }
-    else
-      {
-        min += coefs[i] * d->Get_Real_Value(d->Get_Max());
-        max += coefs[i] * d->Get_Real_Value(d->Get_Min());
-      }
-    i++;
-  }
+Variable * Add_Weighted_Variable (CSP * pb, Variable * x, int coef)
+// adds a variable equal to x * coef to the instance pb and returns it
+{      
+  Domain * d = x->Get_Domain();
+      
+  set<long> values;
+  for (unsigned int j = 0; j < d->Get_Size();j++)
+    values.insert (coef * d->Get_Remaining_Real_Value(j));
   
-  pb->Add_Variable (min,max,"obj",true);
+  pb->Add_Variable (values,x->Get_Name()+ "_coef_"+to_string(pb->Get_N()),false,true);
+  Variable * y = pb->Get_Variable(pb->Get_N()-1);
+
+  vector<Variable *> scope;
+  scope.push_back (y);
+  scope.push_back (x);
   
-  scope.push_back (pb->Get_Variable(pb->Get_N()-1));
-  coefs.push_back (-1);
-    
-  // we create the constraint
-  pb->Add_Constraint (new Equal_Weighted_Sum_Global_Constraint (scope,coefs,0),false);
-  pb->Set_Criterion_Information ("sum "+to_string(scope.size()-1));
+  pb->Add_Constraint(new Equal_Binary_Constraint(scope,coef,0),false);
+  return y;
 }
 
 
-void Minimax_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs, bool is_minimum)
+void Minimax_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs, bool is_minimum, enum Objective obj)
 {
   // we add a variable in order to represent the objective variable and a constraint for expressing the objective
-  set<int> values_obj;
   for (unsigned int i = 0; i < scope.size(); i++)
-  {
-    Variable * x = scope[i];
-    Domain * d = x->Get_Domain();
-    
     if (coefs[i] != 1)
     {
-      set<int> values;
-      for (unsigned int j = 0; d->Get_Size();j++)
-      {
-        values.insert (coefs[i] * d->Get_Remaining_Real_Value(j));
-        values_obj.insert (coefs[i] * d->Get_Remaining_Real_Value(j));
-      }
-      
-      pb->Add_Variable (values,x->Get_Name()+ "_coef_"+to_string(pb->Get_M()),true);
-
       // we replace the current variable by the weighted variable
-      scope[i] = pb->Get_Variable(pb->Get_N()-1);
-      
-      // we create the constraint linking the current variable and its related weighted variable
-      vector<Variable *> scope_eq;
-      scope_eq.push_back (scope[i]);
-      scope_eq.push_back (x);
-      
-      pb->Add_Constraint(new Equal_Binary_Constraint(scope_eq,coefs[i],0),false);
+      scope[i] = Add_Weighted_Variable (pb, scope[i], coefs[i]);
     }
-    else
-      {
-        Domain * d = x->Get_Domain();
-        for (int j = d->Get_Size()-1; j >= 0; j--)        
-          values_obj.insert (d->Get_Remaining_Real_Value(j));
-      }
-  }
 
-  
-  pb->Add_Variable (values_obj,"obj",true);
-  
-  scope.insert (scope.begin(),pb->Get_Variable(pb->Get_N()-1));
-    
-  // we create the constraint
+  // we create the objective function and add it to the instance
   if (is_minimum)
-  {
-    pb->Add_Constraint (new Minimum_Global_Constraint (scope),false);  
-    pb->Set_Criterion_Information ("minimum "+to_string(scope.size()-1));
-  }
+    pb->Set_Objective_Function (new Minimum_Objective_Function(obj,scope));
   else
-    {
-      pb->Add_Constraint (new Maximum_Global_Constraint (scope),false);
-      pb->Set_Criterion_Information ("maximum "+to_string(scope.size()-1));
-    }
+    pb->Set_Objective_Function (new Maximum_Objective_Function(obj,scope));
 }
 
-
-void Nvalues_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs)
+void Nvalues_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs, enum Objective obj)
 {
-  // we add a variable in order to represent the objective variable and a constraint for expressing the objective
-  pb->Add_Variable (0,scope.size(),"obj",true);
-  
-  scope.insert (scope.begin(),pb->Get_Variable(pb->Get_N()-1));
-
-  for (unsigned int i = 1; i < scope.size(); i++)
+  for (unsigned int i = 0; i < scope.size(); i++)
   {
-    Variable * x = scope[i];
-    
-    if (coefs[i-1] != 1)
+    if (coefs[i] != 1)
     {
-      Domain * d = x->Get_Domain();
-      
-      set<int> values;
-      for (unsigned int j = 0; j < d->Get_Size();j++)
-        values.insert (coefs[i-1] * d->Get_Remaining_Real_Value(j));
-      
-      pb->Add_Variable (values,x->Get_Name()+ "_coef_"+to_string(pb->Get_N()),true);
-
-      scope[i] = pb->Get_Variable(pb->Get_N()-1);
-      
-      vector<Variable *> scope_eq;
-      scope_eq.push_back (scope[i+1]);
-      scope_eq.push_back (x);
-      
-      pb->Add_Constraint(new Equal_Binary_Constraint(scope_eq,coefs[i-1],0),false);
+      // we replace the current variable by the weighted variable
+      scope[i] = Add_Weighted_Variable (pb, scope[i], coefs[i]);
     }
   }
 
-  // we create the constraint
-  pb->Add_Constraint (new NValues_Global_Constraint(scope),false);
-  pb->Set_Criterion_Information ("nvalue "+to_string(scope.size()-1));
+  // we create the objective function and add it to the instance
+  pb->Set_Objective_Function (new Nvalue_Objective_Function(obj,scope));
 }
 
 
-void Product_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs)
+void Product_Objective (COP * pb, vector<Variable *> &scope, vector<int> &coefs, enum Objective obj)
 {
   // we add a variable in order to represent the objective variable and a constraint for expressing the product objective
   int coef_product = 1;
   for (vector<int>::iterator iter = coefs.begin(); iter != coefs.end(); iter++)
     coef_product *= *iter;
   
-  bool all_positive = true;
-  int min_prod_pos = 1;
-  int max_prod_pos = 1;
-  int prod_mix = 1; 
-  
-  int i = 0;
-  for (vector<Variable*>::iterator iter = scope.begin(); iter != scope.end(); iter++)
-  {
-    Domain * d = (*iter)->Get_Domain();
-
-    int vmin = d->Get_Real_Value (d->Get_Min());
-    int vmax = d->Get_Real_Value (d->Get_Max());
-
-    if (vmin < 0)
-      all_positive = false;
-    
-    min_prod_pos *= vmin;
-    max_prod_pos *= vmax;
-    
-    if (abs(vmin) < abs(vmax))
-      prod_mix *= vmax;
-    else prod_mix *= vmin;
-
-    i++;
-  }
-
-  int min, max;
-
-  if (all_positive)
-  {
-    min = min_prod_pos;
-    max = max_prod_pos;
-  }
-  else 
-    {
-      min = - abs(prod_mix);
-      max = abs(prod_mix);
-    }
-    
-  if (coef_product > 0)
-    pb->Add_Variable (coef_product*min,coef_product*max,"obj",true);
-  else pb->Add_Variable (coef_product*max,coef_product*min,"obj",true);
-  
-  scope.insert (scope.begin(), pb->Get_Variable(pb->Get_N()-1));
-
-  string expr = "eq(" + scope[0]->Get_Name() + ",mul(" + to_string (coef_product) ;
+  string expr = "mul(";
+  if (coef_product != 1)
+    expr += to_string (coef_product);
   for (unsigned int i = 1; i < scope.size(); i++)
     expr += "," + scope[i]->Get_Name();
-  expr += "))";
+  expr += ")";
     
-  // we create the constraint
-  Expression e = string_to_expression (expr,pb,scope);
-  pb->Add_Constraint (new Predicate_Constraint(scope,e),false);
-  pb->Set_Criterion_Information ("product "+to_string(scope.size()-1));
+  // we create the objective function and add it to the instance
+  Expression_Objective (pb,expr, obj);
 }
 
 
@@ -1680,46 +1551,38 @@ void buildObjective (COP * pb, ExpressionObjective type, vector<Variable *> & sc
     switch (type)
     {
       case XCSP3Core::EXPRESSION_O:  
-          throw ("case is not supported yet");
+          throw ("Impossible case?");
           break;
       case XCSP3Core::SUM_O: 
-          Sum_Objective (dynamic_cast<COP*>(pb),scope,coefs); 
+          pb->Set_Objective_Function (new Sum_Objective_Function(obj, scope, coefs)); 
           break;
       case XCSP3Core::PRODUCT_O:
-          Product_Objective (dynamic_cast<COP*>(pb),scope,coefs); 
+          Product_Objective (dynamic_cast<COP*>(pb),scope,coefs, obj); 
           break;
       case XCSP3Core::MINIMUM_O:
-          Minimax_Objective (dynamic_cast<COP*>(pb),scope,coefs,true);
+          Minimax_Objective (dynamic_cast<COP*>(pb),scope,coefs,true,obj);
           break;
       case XCSP3Core::MAXIMUM_O:  
-          Minimax_Objective (dynamic_cast<COP*>(pb),scope,coefs,false);
+          Minimax_Objective (dynamic_cast<COP*>(pb),scope,coefs,false,obj);
           break;
       case XCSP3Core::NVALUES_O:  
-          Nvalues_Objective (dynamic_cast<COP*>(pb),scope,coefs);
+          Nvalues_Objective (dynamic_cast<COP*>(pb),scope,coefs,obj);
           break;
-      case XCSP3Core::LEX_O:  
-          throw ("Error: Lex objective  is not supported yet");
+      case XCSP3Core::LEX_O: 
+          throw ("Error: Lex objective not taken into account yet");
           break;
     }
-
-    dynamic_cast<COP*>(pb)->Set_Objective(obj,pb->Get_N()-1);
   }
   else
     {
       // the scope contains a single variable (otherwise the instance contains an error)
-      if (coefs[0] == 1)
-      {
-        dynamic_cast<COP*>(pb)->Set_Criterion_Information ("variable 1");
-        dynamic_cast<COP*>(pb)->Set_Objective(obj,scope[0]->Get_Num());
-      }
-      else
-        {
-          string expr="mul("+to_string(coefs[0])+","+scope[0]->Get_Name()+")";
-          Expression_Objective (dynamic_cast<COP*>(pb),expr);
-          dynamic_cast<COP*>(pb)->Set_Objective(obj,pb->Get_N()-1);
-        }
+      if (coefs[0] != 1)
+        scope[0] = Add_Weighted_Variable (pb, pb->Get_Variable(scope[0]->Get_Name()), coefs[0]);
+
+      Expression_Objective (pb, scope[0]->Get_Name(), obj);
     }
 }
+
 
 void Load_XCSP3Callbacks::buildObjectiveMinimize(ExpressionObjective type, vector<XVariable *> &list, vector<int> &coefs)
 // creates a minimum objective based on a weighted function
@@ -1829,5 +1692,49 @@ void Load_XCSP3Callbacks::buildObjectiveMaximize(ExpressionObjective type, vecto
     // we build the objective
     vector<int> coefs (trees.size(),1);
     buildObjective(dynamic_cast<COP*>(pb),type, scope, coefs, MAXIMIZE);
+  }
+}
+
+
+void Load_XCSP3Callbacks::buildObjectiveMinimize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs)
+{
+  if (dynamic_cast<COP*>(pb) != 0)
+  {
+    // we first consider the scope of the objective function
+    vector<Variable *> scope;
+    
+    convert_variable_list (pb,list,scope);
+    
+    for (unsigned int i = 0; i < scope.size(); i++)
+    {
+      // we replace list[i] by list[i]*coefs[i]
+      scope[i] = Add_Weighted_Variable(pb, scope[i], pb->Get_Variable(coefs[i]->id));
+    }
+  
+    // we build the objective
+    vector<int> coeffs (scope.size(), 1);
+    buildObjective (dynamic_cast<COP*>(pb), type, scope, coeffs, MINIMIZE);
+  }
+}
+
+
+void Load_XCSP3Callbacks::buildObjectiveMaximize(ExpressionObjective type, vector<XVariable *> &list, vector<XVariable*> &coefs)
+{
+  if (dynamic_cast<COP*>(pb) != 0)
+  {
+    // we first consider the scope of the objective function
+    vector<Variable *> scope;
+    
+    convert_variable_list (pb,list,scope);
+    
+    for (unsigned int i = 0; i < scope.size(); i++)
+    {
+      // we replace list[i] by list[i]*coefs[i]
+      scope[i] = Add_Weighted_Variable(pb, scope[i], pb->Get_Variable(coefs[i]->id));
+    }
+  
+    // we build the objective
+    vector<int> coeffs (scope.size(), 1);
+    buildObjective (dynamic_cast<COP*>(pb), type, scope, coeffs, MAXIMIZE);
   }
 }

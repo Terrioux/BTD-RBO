@@ -51,6 +51,7 @@ void Print_Solving_Information (COP * pb, Optimizer_State optimizer_result, Assi
   cout << starter << "# Decisions: " << Solving_Decision_Counter.Get_Value() << endl;
   cout << starter << "# Conflicts: " << Solving_Conflict_Counter.Get_Value() << endl;
   cout << starter << "# Restarts: " << Solving_Restart_Number_Counter.Get_Value() << endl;
+  
 }
 
 
@@ -59,8 +60,8 @@ int main (int argc, char * argv [])
 {
 	try
 	{		
-    cout << "c version " << VERSION << endl;
-
+    cerr << "c Version " << VERSION << endl;
+    
     if (argc != 3) 
     {
       cerr << "c Usage: " << argv[0] << " TIMELIMIT BENCHNAME" << endl;
@@ -131,6 +132,8 @@ int main (int argc, char * argv [])
 
 			// print the information related to the solving
 			Print_Solving_Information (pb,result,solution,cost);
+      
+      cout << "c Global Time: " << Solving_Timer.Get_Duration() << " s" << endl;
 		}
 		
 		catch (...)
@@ -150,7 +153,7 @@ int main (int argc, char * argv [])
  	{
     if (error.find("not yet supported") != string::npos)
       cerr << "s UNSUPPORTED" << endl;
-    else cerr << "c1 " << error << endl;
+    else cerr << "c " << error << endl;
 		return 1;
 	}
 
@@ -159,7 +162,7 @@ int main (int argc, char * argv [])
     string s (error);
     if (s.find("not yet supported") != string::npos)
       cerr << "s UNSUPPORTED" << endl;
-    else cerr << "c2 " << error << endl;
+    else cerr << "c " << error << endl;
 		return 1;
 	}
   
@@ -169,7 +172,7 @@ int main (int argc, char * argv [])
   
     if (s.find("not yet supported") != string::npos)
       cerr << "s UNSUPPORTED" << endl;
-    else cerr << "c3 " << error.what() << endl;
+    else cerr << "c " << error.what() << endl;
     
 		return 1;    
   }

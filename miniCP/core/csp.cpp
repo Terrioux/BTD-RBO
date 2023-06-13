@@ -17,6 +17,7 @@
 #include "compact_table_extension_constraint.h"
 #include "expression.h"
 #include <typeinfo>
+#include <stack>
 
 
 //-----------------------------
@@ -30,8 +31,10 @@ CSP::CSP (Event_Manager * em, string pb_name)
 /// \param[in] pb_name  the name of the CSP instance
 {
 	h = new Multi_Hypergraph;
+	mandatory_h = 0;
 	name = pb_name;
   unary_nogood_base = new Unary_Nogood_Base_Global_Constraint();
+  mandatory_variable_number = 0;
   nogood_base = 0;
   event_manager = em;
   last_conflict_variable = 0;
@@ -51,6 +54,7 @@ CSP::~CSP ()
 		delete x;
 	
 	delete h;
+	delete mandatory_h;
   
   delete event_manager;
 }
@@ -61,20 +65,25 @@ CSP::~CSP ()
 //-----------------
 
 
-void CSP::Add_Variable (set<int> & values, string var_name, bool is_auxiliary)
-// adds a new variable v to the CSP whose domain is defined by the set values and whose name is var_name, is_auxiliary is set to true if the variable is auxiliary
+Variable * CSP::Add_Variable (set<long> & values, string var_name, bool is_initial, bool is_auxiliary)
+// adds a new variable v to the CSP whose domain is defined by the set values and whose name is var_name, is_initial is set to true if the variable appears initially in the problem, is_auxiliary is set to true if the variable is auxiliary and returns it
 /// \param[in] values the set of values which defines the domain of the new variable
 /// \param[in] var_name the name of the new variable
 /// \param[in] is_auxiliary true if the variable is auxiliary, false otherwise
 {
-  Variable * x = new Variable (values,Get_N(),var_name,event_manager,is_auxiliary);
+  Variable * x = new Variable (values,Get_N(),var_name,event_manager, is_initial, is_auxiliary);
   variables.push_back(x);
+  if (! is_auxiliary)
+    mandatory_variable_number++;
 	h->Add_Vertex();
+  
+  
+  return x;
 }
 
 
-void CSP::Add_Variable (int a, int b, string var_name, bool is_auxiliary)
-// adds a new variable v to the CSP whose domain is defined by the values of [a,b] and whose name is var_name, is_auxiliary is set to true if the variable is auxiliary
+Variable * CSP::Add_Variable (long a, long b, string var_name, bool is_initial, bool is_auxiliary)
+// adds a new variable v to the CSP whose domain is defined by the values of [a,b] and whose name is var_name, is_initial is set to true if the variable appears initially in the problem, is_auxiliary is set to true if the variable is auxiliary and returns it
 /// \param[in] a the lower bound of the integer domain of the new variable
 /// \param[in] b the upper bound of the integer domain of the new variable
 /// \param[in] var_name the name of the new variable
@@ -82,9 +91,13 @@ void CSP::Add_Variable (int a, int b, string var_name, bool is_auxiliary)
 {
   assert (a <= b);
 
-  Variable * x = new Variable (a,b,Get_N(),var_name,event_manager,is_auxiliary);
+  Variable * x = new Variable (a,b,Get_N(),var_name,event_manager, is_initial, is_auxiliary);
   variables.push_back(x);
+  if (! is_auxiliary)
+    mandatory_variable_number++;
 	h->Add_Vertex();
+  
+  return x;
 }
 
 
@@ -259,4 +272,88 @@ void CSP::Replace_Constraint (unsigned int num, Constraint * c)
     if (dynamic_cast<Compact_Table_Extension_Constraint*> (c) != 0)
       requires_constraint_restoration = true;
 	}
+}
+
+
+Multi_Hypergraph * CSP::Get_Mandatory_Structure()
+// returns a pointer on the constraint hypergraph representing the structure of the CSP restricted to mandatory variables
+{
+  if (mandatory_variable_number == Get_N())
+    return h;
+  else
+    if (mandatory_h == 0)
+    {
+      mandatory_h = new Multi_Hypergraph();
+      
+      // we add a vertice per variable (including auxiliary variables)
+      for (unsigned int i = 0; i < Get_N(); i++)
+        mandatory_h->Add_Vertex ();
+      
+      // we keep each hyperedge of h which only involves mandatory variables
+      for (map<int,Edge*>::iterator iter = h->Begin_Edge_List (); iter != h->End_Edge_List (); iter++)
+      {
+        vertex scope [(*iter).second->Get_Arity()];
+        unsigned int arity = 0;
+        
+        for (set<vertex>::iterator iter_v = (*iter).second->Begin(); (iter_v != (*iter).second->End()) && (! variables[*iter_v]->Is_Auxiliary ()); iter_v++)
+        {
+          scope[arity] = *iter_v;
+          arity++;
+        }
+        
+        if (arity == (unsigned) (*iter).second->Get_Arity())
+          mandatory_h->Add_Edge_End(scope,arity);
+      }
+      
+      // we add some edges to take into account the relationship between mandatory variables via auxiliary variables
+      vector<bool> marked (Get_N());
+      for (unsigned int i = 0; i < Get_N(); i++)
+        marked[i] = ! Get_Variable(i)->Is_Auxiliary();
+        
+      for (unsigned int i = 0; i < Get_N(); i++)
+        if (! marked[i])
+        {
+          set<unsigned int> scope;
+          
+          stack<unsigned int> S;
+          S.push(i);
+          marked[i] = true;
+          
+          while (! S.empty())
+          {
+            unsigned x = S.top();
+            S.pop();
+            
+            for (list<Edge *>::iterator iter = h->Begin_Edge_List(x) ; iter != h->End_Edge_List(x); iter++)
+            {
+              for (vertex v : (*iter)->Get_Scope())
+              {
+                if (Get_Variable(v)->Is_Auxiliary())
+                {
+                  if (! marked[v])
+                  {
+                    S.push(v);
+                    marked[v] = true;
+                  }
+                }
+                else scope.insert(v);
+              }
+            }
+          }
+          
+          if (scope.size() > 1)
+          {
+            unsigned int arity = 0;
+            unsigned int scope_edge [scope.size()];
+            for (unsigned int v : scope)
+            {
+              scope_edge[arity] = v;
+              arity++;
+            }
+            mandatory_h->Add_Edge_End(scope_edge,arity);
+          }
+        }
+        
+    }
+  return mandatory_h;
 }

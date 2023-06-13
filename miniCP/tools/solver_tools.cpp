@@ -4,10 +4,8 @@
 #include <typeinfo>
 
 // support header files
-#include "last_support.h"
 #include "residue_support.h"
 #include "multiple_residue_support.h"
-#include "no_support.h"
 
 
 // deletion_stack header files
@@ -64,7 +62,8 @@ namespace solver_tools
 
     size = 0;
     for (unsigned int i = 0; i < pb->Get_N(); i++)
-      size += pb->Get_Variable(i)->Get_Domain()->Get_Size();
+      if (! pb->Get_Variable(i)->Is_Auxiliary())
+        size += pb->Get_Variable(i)->Get_Domain()->Get_Size();
 
     if (pb->Requires_Constraint_Restoration())
       ds = new Constraint_Basic_Deletion_Stack(pb,size);

@@ -5,10 +5,8 @@
 #include <typeinfo>
 
 // support header files
-#include "last_support.h"
 #include "residue_support.h"
 #include "multiple_residue_support.h"
-#include "no_support.h"
 
 
 // deletion_stack header files

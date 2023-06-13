@@ -42,7 +42,7 @@ Tree_Decomposition * Tree_Decomposition_Initialization (CSP * pb)
 // initialization of the tree-decomposition
 {
 	// computation of the tree-decomposition related to the CSP pb
-	Graphical_Structure * gs = pb->Get_Structure();
+	Graphical_Structure * gs = pb->Get_Mandatory_Structure();
 	
 	Tree_Decomposition * TD = 0;
 		

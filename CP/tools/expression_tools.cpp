@@ -102,7 +102,10 @@ bool is_operator (string term, operator_type & op)
                                                    if (term.compare ("set") == 0)  op = SET;
                                                    else
                                                      if (term.compare ("in") == 0)  op = IN;
-                                                     else return false;
+                                                     else
+                                                       if (term.compare ("ini") == 0)  op = INI;
+                                                       else return false;
+
   return true;
 }
 
@@ -110,8 +113,6 @@ bool is_operator (string term, operator_type & op)
 Expression string_to_expression (string expression, unsigned int & pos, CSP * pb, vector<Variable *> & scope)
 // reads a functional predicate in the file whose descriptor is file and returns the corresponding expression
 {
-	//~ int init = pos;
-	
 	string term;
 
 	term = extract_term (expression,pos);

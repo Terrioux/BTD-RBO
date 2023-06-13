@@ -11,12 +11,14 @@ class Assignment                    /// This class allows to represent assignmen
 {
 	protected:
     unsigned int size;              ///< the size of the assignment
+    unsigned int maximal_size;      ///< the maximal size of the assignment
 		vector<pair<int,int>> values;   ///< the assignment of value to variable 
 		vector<int> position;           ///< the position of each variable in the assginment
 		
 	public:
 		// constructors and destructor
-		Assignment (int max_size);			  ///< construct an empty assignment whose maximum size is max_size
+		Assignment (int max_size);		 	  ///< construct an empty assignment whose maximum size is max_size and which involves variables of label at most max_size
+		Assignment (int max_size, int max_label);			  ///< construct an empty assignment whose maximum size is max_size and which involves variables of label at most max_label
 		Assignment (Assignment & a);		  ///< construct an assignment by copying the assignment a
 		
 		// operator
@@ -128,6 +130,6 @@ inline bool Assignment::Is_Solution (CSP * pb)
 // returns true if the assignment involves all the variables of the CSP pb and satisfies all its constraints, false otherwise
 /// param[in] pb the CSP instance for which we want to know if the current assignment is a solution
 {
-	return (size == pb->Get_N()) && Is_Consistent (pb);
+	return (size == pb->Get_Mandatory_N()) && Is_Consistent (pb);
 }
 #endif

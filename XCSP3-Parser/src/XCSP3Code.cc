@@ -39,7 +39,7 @@ namespace XCSP3Core {
  vector<XTransition> tr; // Not beautiful but remove code to fixed data in group constraint.
  string st;
  vector<string> fi;
- vector<int> _except;
+ vector<int> ___except;
  OrderType _op;
  vector<int> _values;
 
@@ -349,6 +349,10 @@ void XInitialCondition::unfoldParameters(XConstraintGroup *group, vector<XVariab
 
 
 void XInitialCondition::extractCondition(XCondition &xc) { // Create the op and the operand (which can be a value, an interval or a XVariable)
+    XInitialCondition::extract(xc, condition);
+}
+
+void XInitialCondition::extract(XCondition &xc, string &condition) { // Create the op and the operand (which can be a value, an interval or a XVariable)
     std::regex const rglt(R"(\(.*(le|lt|ge|gt|in|eq|ne),(.*)\).*)");
     std::smatch match;
     std::regex_match(condition, match, rglt);
@@ -435,6 +439,18 @@ void XConstraintIntension::unfoldParameters(XConstraintGroup *group, vector<XVar
     group->unfoldString(function, arguments);
 }
 
+void XConstraintRegular::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments,
+                                          XConstraint *original) {
+    XConstraint::unfoldParameters(group, arguments, original);
+    XConstraintRegular *xr = dynamic_cast<XConstraintRegular *>(original);
+    start = xr->start;
+    group->unfoldString(start, arguments);
+    final.assign(xr->final.begin(), xr->final.end());
+    for(auto &s : final) {
+        group->unfoldString(s, arguments);
+    }
+    transitions.assign(xr->transitions.begin(), xr->transitions.end());
+}
 
 void XConstraintGroup::unfoldArgumentNumber(int i, XConstraint *builtConstraint) {
     builtConstraint->unfoldParameters(this, arguments[i], constraint);
@@ -559,7 +575,8 @@ void XConstraintNoOverlap::unfoldParameters(XConstraintGroup *group, vector<XVar
 
 void XConstraintCumulative::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments, XConstraint *original) {
     XConstraintCumulative *xc = dynamic_cast<XConstraintCumulative *>(original);
-    XConstraint::unfoldParameters(group, arguments, original);
+
+    //XConstraint::unfoldParameters(group, arguments, original); // Done with origins.
     XLengths::unfoldParameters(group, arguments, original);
     XInitialCondition::unfoldParameters(group, arguments, original);
     group->unfoldVector(origins, arguments, xc->origins);
@@ -573,6 +590,9 @@ void XConstraintBinPacking::unfoldParameters(XConstraintGroup *group, vector<XVa
     XConstraint::unfoldParameters(group, arguments, original);
     XValues::unfoldParameters(group, arguments, original);
     XInitialCondition::unfoldParameters(group, arguments, original);
+    group->unfoldVector(limits, arguments, xc->limits);
+    group->unfoldVector(loads, arguments, xc->loads);
+    group->unfoldString(xc->conditions, arguments);
 }
 
 
@@ -605,12 +625,17 @@ void XConstraintClause::unfoldParameters(XConstraintGroup *group, vector<XVariab
     }
 }
 
+void XConstraintInstantiation::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments, XConstraint *original) {
+    XConstraint::unfoldParameters(group, arguments, original);
+    XValues::unfoldParameters(group, arguments, original);
+}
 
 
 void XConstraintPrecedence::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments, XConstraint *original) {
     XConstraintPrecedence *xc = dynamic_cast<XConstraintPrecedence *>(original);
     XConstraint::unfoldParameters(group, arguments, original);
     XValues::unfoldParameters(group, arguments, original);
+    covered = xc->covered;
 }
 
 void XConstraintFlow::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments, XConstraint *original) {
@@ -620,6 +645,7 @@ void XConstraintFlow::unfoldParameters(XConstraintGroup *group, vector<XVariable
     XInitialCondition::unfoldParameters(group, arguments, original);
     group->unfoldVector(weights, arguments, xc->weights);
     group->unfoldVector(balance, arguments, xc->balance);
+    arcs.assign(xc->arcs.begin(), xc->arcs.end());
 }
 
 
@@ -628,8 +654,8 @@ void XConstraintFlow::unfoldParameters(XConstraintGroup *group, vector<XVariable
 void XConstraintKnapsack::unfoldParameters(XConstraintGroup *group, vector<XVariable *> &arguments, XConstraint *original) {
     XConstraintKnapsack *xc = dynamic_cast<XConstraintKnapsack *>(original);
     XConstraint::unfoldParameters(group, arguments, original);
-    XValue::unfoldParameters(group, arguments, original);
     XInitialCondition::unfoldParameters(group, arguments, original);
+    group->unfoldString(profitCondition.condition, arguments);
     group->unfoldVector(profits, arguments, xc->profits);
     group->unfoldVector(weights, arguments, xc->weights);
 }
