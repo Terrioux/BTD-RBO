@@ -14,7 +14,7 @@ class Greater_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Constra
 
 	public:
 		// constructors
-		Greater_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, bool is_strict, int cst);	///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to > or >= if the boolean is_strict is true
+		Greater_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, bool is_strict, long cst);	///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to > or >= if the boolean is_strict is true
 		Greater_Weighted_Sum_Global_Constraint (Greater_Weighted_Sum_Global_Constraint & c);              	///< constructs a new constraint by copying the constraint c
 		
 		// basic functions
@@ -26,7 +26,7 @@ class Greater_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Constra
     bool Is_Strict_Inequality ();                 ///< returns true if the sum must be greater than the constant, false otherwise
   
   private:
-    bool Compare (int sum);             ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);             ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -67,7 +67,7 @@ inline string Greater_Weighted_Sum_Global_Constraint::Get_Relation ()
 }
 
 
-inline bool Greater_Weighted_Sum_Global_Constraint::Compare (int sum)
+inline bool Greater_Weighted_Sum_Global_Constraint::Compare (long sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return strict_inequality ? sum > constant : sum >= constant;

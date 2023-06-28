@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Not_Equal_Weighted_Sum_Global_Constraint::Not_Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst): Weighted_Sum_Global_Constraint (var,w,cst)
+Not_Equal_Weighted_Sum_Global_Constraint::Not_Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst): Weighted_Sum_Global_Constraint (var,w,cst)
 // constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to !=
 {	
 }
@@ -30,7 +30,7 @@ bool Not_Equal_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int va
 		if ((scope_var[i]->Get_Num() != var) && (scope_var [i]->Get_Domain()->Get_Size() != 1))
 			return false;
 
-	int sum = 0;
+	long sum = 0;
   unsigned int x = Get_Position (var);
 	for (unsigned int i = 0; i < arity; i++)
 		if (i != x)
@@ -70,7 +70,7 @@ bool Not_Equal_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int va
 void Not_Equal_Weighted_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-	int sum = 0;
+	long sum = 0;
 	unsigned int x = arity;
   unsigned int nb = 0;
   

@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Not_Equal_Sum_Global_Constraint::Not_Equal_Sum_Global_Constraint (vector<Variable *> & var, int cst): Sum_Global_Constraint (var,cst)
+Not_Equal_Sum_Global_Constraint::Not_Equal_Sum_Global_Constraint (vector<Variable *> & var, long cst): Sum_Global_Constraint (var,cst)
 // constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is not equal to the constant cst
 {	
 }
@@ -32,7 +32,7 @@ bool Not_Equal_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Suppor
 		if ((i != x) && (scope_var [i]->Get_Domain()->Get_Size() != 1))
 			return false;
 
-	int sum = 0;
+	long sum = 0;
 	
 	for (unsigned int i = 0; i < arity; i++)
 		if (i != x)
@@ -72,7 +72,7 @@ bool Not_Equal_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Suppor
 void Not_Equal_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-	int sum = 0;
+	long sum = 0;
 	unsigned int x = arity;
   
 	for (unsigned int i = 0; i < arity; i++)

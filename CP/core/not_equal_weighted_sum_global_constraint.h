@@ -11,7 +11,7 @@ class Not_Equal_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Const
 {
 	public:
 		// constructors and destructor
-		Not_Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst);	///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to !=
+		Not_Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst);	///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to !=
 		Not_Equal_Weighted_Sum_Global_Constraint (Not_Equal_Weighted_Sum_Global_Constraint & c);	    	///< constructs a new constraint by copying the constraint c 
 		
 		// basic functions
@@ -22,7 +22,7 @@ class Not_Equal_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Const
     string Get_Relation () override;                     ///< returns the relation used to compare the sum and the constant
     
   private:
-    bool Compare (int sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -58,7 +58,7 @@ inline bool Not_Equal_Weighted_Sum_Global_Constraint::Impacted_By_Last_Events (C
 }
 
 
-inline bool Not_Equal_Weighted_Sum_Global_Constraint::Compare (int sum)
+inline bool Not_Equal_Weighted_Sum_Global_Constraint::Compare (long sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return sum != constant;

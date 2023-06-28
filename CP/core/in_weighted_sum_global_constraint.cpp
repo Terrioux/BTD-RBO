@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-In_Weighted_Sum_Global_Constraint::In_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst1, int cst2): Weighted_Sum_Global_Constraint (var,w,cst1)
+In_Weighted_Sum_Global_Constraint::In_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst1, long cst2): Weighted_Sum_Global_Constraint (var,w,cst1)
 // constructs a new constraint which involves the variable in var and which checks whether the weighted sum (weighted by weight from w) of the values of the variables in var in the interval [cst1, cst2]
 {	
   constant2 = cst2;
@@ -28,7 +28,7 @@ In_Weighted_Sum_Global_Constraint::In_Weighted_Sum_Global_Constraint (In_Weighte
 bool In_Weighted_Sum_Global_Constraint::Is_Satisfied (int * t)
 // returns true if the tuple t satisfies the constraint, false otherwise
 {
-	int sum = 0;
+	long sum = 0;
 	for (unsigned int i = 0; i < arity; i++)
 		sum += scope_var[i]->Get_Domain()->Get_Real_Value (t[i]) * weights[i];
 
@@ -39,8 +39,8 @@ bool In_Weighted_Sum_Global_Constraint::Is_Satisfied (int * t)
 bool In_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * ls, Deletion_Stack * ds)
 // returns true if the application of arc-consistency on the constraint w.r.t. the variable var deletes a value in the domain of var, false otherwise
 {
-	int sum_min = 0;
-	int sum_max = 0;
+	long sum_min = 0;
+	long sum_max = 0;
   unsigned int x = Get_Position (var);
   Domain * dx = scope_var [x]->Get_Domain();
 	Domain * dy;

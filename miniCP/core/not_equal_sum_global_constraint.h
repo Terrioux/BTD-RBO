@@ -11,7 +11,7 @@ class Not_Equal_Sum_Global_Constraint: public Sum_Global_Constraint   /// This c
 {
 	public:
 		// constructors and destructor
-		Not_Equal_Sum_Global_Constraint (vector<Variable *> & var, int cst);		///< constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is not equal to the constant cst
+		Not_Equal_Sum_Global_Constraint (vector<Variable *> & var, long cst);		///< constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is not equal to the constant cst
 		Not_Equal_Sum_Global_Constraint (Not_Equal_Sum_Global_Constraint & c);	///< constructs a new constraint by copying the constraint c
 		
 		// basic functions
@@ -22,7 +22,7 @@ class Not_Equal_Sum_Global_Constraint: public Sum_Global_Constraint   /// This c
     string Get_Relation () override;                     ///< returns the relation used to compare the sum and the constant
   
   private:
-    bool Compare (int sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -58,7 +58,7 @@ inline string Not_Equal_Sum_Global_Constraint::Get_Relation ()
 }
 
 
-inline bool Not_Equal_Sum_Global_Constraint::Compare (int sum)
+inline bool Not_Equal_Sum_Global_Constraint::Compare (long sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return sum != constant;

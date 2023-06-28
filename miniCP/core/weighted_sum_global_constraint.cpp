@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Weighted_Sum_Global_Constraint::Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst): Sum_Global_Constraint (var,cst)
+Weighted_Sum_Global_Constraint::Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst): Sum_Global_Constraint (var,cst)
 // constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to comp
 {	
 	weights = new int [arity];
@@ -39,7 +39,7 @@ Weighted_Sum_Global_Constraint::~Weighted_Sum_Global_Constraint ()
 bool Weighted_Sum_Global_Constraint::Is_Satisfied (int * t)
 // returns true if the tuple t satisfies the constraint, false otherwise
 {
-	int sum = 0;
+	long sum = 0;
 	for (unsigned int i = 0; i < arity; i++)
 		sum += scope_var[i]->Get_Domain()->Get_Real_Value (t[i]) * weights[i];
 

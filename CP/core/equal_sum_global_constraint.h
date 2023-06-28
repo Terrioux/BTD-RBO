@@ -14,7 +14,7 @@ class Equal_Sum_Global_Constraint: public Sum_Global_Constraint   /// This class
 
 	public:
 		// constructors and destructor
-		Equal_Sum_Global_Constraint (vector<Variable *> & var, int cst);							///< constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is equal to the constant cst
+		Equal_Sum_Global_Constraint (vector<Variable *> & var, long cst);							///< constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is equal to the constant cst
 		Equal_Sum_Global_Constraint (Equal_Sum_Global_Constraint & cb);		///< constructs a new constraint by copying the constraint c for the CSP pb (we assume that the variables in the scope of c have the same number in the CSP pb)
 		~Equal_Sum_Global_Constraint ();													 			   						///< destructor
 		
@@ -26,7 +26,7 @@ class Equal_Sum_Global_Constraint: public Sum_Global_Constraint   /// This class
     string Get_Relation () override;              ///< returns the relation used to compare the sum and the constant
   
   private:
-    bool Compare (int sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -60,7 +60,7 @@ inline string Equal_Sum_Global_Constraint::Get_Relation ()
 }
 
 
-inline bool Equal_Sum_Global_Constraint::Compare (int sum)
+inline bool Equal_Sum_Global_Constraint::Compare (long sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return sum == constant;

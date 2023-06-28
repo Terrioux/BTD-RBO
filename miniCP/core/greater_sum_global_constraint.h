@@ -14,7 +14,7 @@ class Greater_Sum_Global_Constraint: public Sum_Global_Constraint   /// This cla
   
 	public:
 		// constructors
-		Greater_Sum_Global_Constraint (vector<Variable *> & var, bool equal, int cst);										///< constructs a new constraint which involves the variable in var and  compares the sum of the values of the variables in var to the constant cst with respect to > or >= if the boolean equal is true
+		Greater_Sum_Global_Constraint (vector<Variable *> & var, bool equal, long cst);										///< constructs a new constraint which involves the variable in var and  compares the sum of the values of the variables in var to the constant cst with respect to > or >= if the boolean equal is true
 		Greater_Sum_Global_Constraint (Greater_Sum_Global_Constraint & c);	///< constructs a new constraint by copying the constraint c for the CSP pb (we assume that the variables in the scope of c have the same number in the CSP pb)
 		
 		// basic functions
@@ -26,7 +26,7 @@ class Greater_Sum_Global_Constraint: public Sum_Global_Constraint   /// This cla
     bool Is_Strict_Inequality ();                 ///< returns true if the sum must be greater than the constant, false otherwise
     
   private:
-    bool Compare (int sum);             ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);             ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -61,7 +61,7 @@ inline string Greater_Sum_Global_Constraint::Get_Relation ()
 }
 
 
-inline bool Greater_Sum_Global_Constraint::Compare (int sum)
+inline bool Greater_Sum_Global_Constraint::Compare (long sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return strict_inequality ? sum > constant : sum >= constant;

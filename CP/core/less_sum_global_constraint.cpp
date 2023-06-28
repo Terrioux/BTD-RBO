@@ -6,7 +6,7 @@
 //--------------
 
 
-Less_Sum_Global_Constraint::Less_Sum_Global_Constraint (vector<Variable *> & var, bool strict, int cst): Sum_Global_Constraint (var,cst)
+Less_Sum_Global_Constraint::Less_Sum_Global_Constraint (vector<Variable *> & var, bool strict, long cst): Sum_Global_Constraint (var,cst)
 // constructs a new constraint which involves the variable in var and  compares the sum of the values of the variables in var to the constant cst with respect to < or <= if the boolean strict is true
 {
   strict_inequality = strict;
@@ -27,7 +27,7 @@ Less_Sum_Global_Constraint::Less_Sum_Global_Constraint (Less_Sum_Global_Constrai
 bool Less_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * ls, Deletion_Stack * ds)
 // returns true if the application of arc-consistency on the constraint w.r.t. the variable var deletes a value in the domain of var, false otherwise
 {
-	int sum = 0;
+	long sum = 0;
 	Domain * dy;
 
 	for (unsigned int i = 0; i < arity; i++)
@@ -65,7 +65,7 @@ bool Less_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * l
 void Less_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-  int sum = 0;
+  long sum = 0;
   Domain * dy;
 
   for (unsigned int i = 0; i < arity; i++)

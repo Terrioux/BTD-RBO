@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Equal_Sum_Global_Constraint::Equal_Sum_Global_Constraint (vector<Variable *> & var, int cst): Sum_Global_Constraint (var,cst)
+Equal_Sum_Global_Constraint::Equal_Sum_Global_Constraint (vector<Variable *> & var, long cst): Sum_Global_Constraint (var,cst)
 // constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var is equal to the constant cst
 {	
 	values = new int [arity];
@@ -64,9 +64,9 @@ bool Equal_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * 
   bool record_support;
   bool modif = false;    // true if a deletion is achieved, false otherwise
 	bool exist_more_tuples;
-	int sum = 0;
-	int sum_max = 0;
-	int sum_min = 0;
+	long sum = 0;
+	long sum_max = 0;
+	long sum_min = 0;
 
 	for (unsigned int i = 0; i < arity; i++)
 		if (i != x)
@@ -238,8 +238,8 @@ bool Equal_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * 
 void Equal_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-	int sum_min = 0;
-	int sum_max = 0;
+	long sum_min = 0;
+	long sum_max = 0;
 
 	for (unsigned int i = 0; i < arity; i++)
   {

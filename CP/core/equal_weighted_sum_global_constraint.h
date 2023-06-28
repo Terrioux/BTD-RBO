@@ -14,7 +14,7 @@ class Equal_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Constrain
 	
 	public:
 		// constructors and destructor
-		Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst);		///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to =
+		Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst);		///< constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to =
 		Equal_Weighted_Sum_Global_Constraint (Equal_Weighted_Sum_Global_Constraint & c);	          	///< constructs a new constraint by copying the constraint c
 		~Equal_Weighted_Sum_Global_Constraint ();													 			   										///< destructor
 		
@@ -26,7 +26,7 @@ class Equal_Weighted_Sum_Global_Constraint: public Weighted_Sum_Global_Constrain
     string Get_Relation () override;     ///< returns the relation used to compare the sum and the constant
 
   private:
-    bool Compare (int sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
+    bool Compare (long sum);                     ///< returns true if the sum satisfies the constraint, false otherwise
 };
 
 
@@ -60,7 +60,7 @@ inline string Equal_Weighted_Sum_Global_Constraint::Get_Relation ()
 }
 
 
-inline bool Equal_Weighted_Sum_Global_Constraint::Compare (int sum)
+inline bool Equal_Weighted_Sum_Global_Constraint::Compare (long  sum)
 // returns true if the sum satisfies the constraint, false otherwise
 {
   return sum == constant;

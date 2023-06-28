@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-Equal_Weighted_Sum_Global_Constraint::Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, int cst): Weighted_Sum_Global_Constraint (var,w,cst)
+Equal_Weighted_Sum_Global_Constraint::Equal_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, long cst): Weighted_Sum_Global_Constraint (var,w,cst)
 // constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to =
 {	
 	values = new int [arity];
@@ -49,9 +49,9 @@ bool Equal_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, S
   bool record_support;
   bool modif = false;    // true if a deletion is achieved, false otherwise
 	bool exist_more_tuples;
-	int sum = 0;
-	int sum_max = 0;
-	int sum_min = 0;
+	long sum = 0;
+	long sum_max = 0;
+	long sum_min = 0;
   
   for (unsigned int j = 0; j < arity; j++)
     if (j != x)
@@ -239,8 +239,8 @@ bool Equal_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, S
 void Equal_Weighted_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-	int sum_min = 0;
-	int sum_max = 0;
+	long sum_min = 0;
+	long sum_max = 0;
 
 	for (unsigned int i = 0; i < arity; i++)
   {

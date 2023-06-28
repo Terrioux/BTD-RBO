@@ -6,7 +6,7 @@
 //--------------
 
 
-Greater_Weighted_Sum_Global_Constraint::Greater_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, bool is_strict, int cst): Weighted_Sum_Global_Constraint (var,w,cst)
+Greater_Weighted_Sum_Global_Constraint::Greater_Weighted_Sum_Global_Constraint (vector<Variable *> & var, vector<int> & w, bool is_strict, long cst): Weighted_Sum_Global_Constraint (var,w,cst)
 // constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var weighted by weight from w to the constant cst with respect to > or >= if the boolean is_strict is true
 {	
   strict_inequality = is_strict;
@@ -28,7 +28,7 @@ Greater_Weighted_Sum_Global_Constraint::Greater_Weighted_Sum_Global_Constraint (
 bool Greater_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * ls, Deletion_Stack * ds)
 // returns true if the application of arc-consistency on the constraint w.r.t. the variable var deletes a value in the domain of var, false otherwise
 {
-	int sum = 0;
+	long sum = 0;
 	Domain * dy;
 
 	for (unsigned int i = 0; i < arity; i++)
@@ -89,9 +89,9 @@ bool Greater_Weighted_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var,
 void Greater_Weighted_Sum_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, Deletion_Stack * ds, timestamp ref)
 // applies the event-based propagator of the constraint by considering the events occurred since ref
 {
-	int sum = 0;
+	long sum = 0;
 	Domain * dy;
-
+  
 	for (unsigned int i = 0; i < arity; i++)
   {
     dy = scope_var [i]->Get_Domain();

@@ -6,7 +6,7 @@
 //-----------------------------
 
 
-In_Sum_Global_Constraint::In_Sum_Global_Constraint (vector<Variable *> & var, int cst1, int cst2): Sum_Global_Constraint (var,cst1)
+In_Sum_Global_Constraint::In_Sum_Global_Constraint (vector<Variable *> & var, long cst1, long cst2): Sum_Global_Constraint (var,cst1)
 // constructs a new constraint which involves the variable in var and which checks whether the sum of the values of the variables in var in the interval [cst1, cst2]
 {	
   constant2 = cst2;
@@ -28,8 +28,8 @@ In_Sum_Global_Constraint::In_Sum_Global_Constraint (In_Sum_Global_Constraint & c
 bool In_Sum_Global_Constraint::Revise (CSP * pb, unsigned int var, Support * ls, Deletion_Stack * ds)
 // returns true if the application of arc-consistency on the constraint w.r.t. the variable var deletes a value in the domain of var, false otherwise
 {
-	int sum_min = 0;
-	int sum_max = 0;
+	long sum_min = 0;
+	long sum_max = 0;
   unsigned int x = Get_Position (var);
   Domain * dx = scope_var [x]->Get_Domain();
 	Domain * dy;

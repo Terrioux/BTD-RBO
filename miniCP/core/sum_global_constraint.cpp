@@ -6,7 +6,7 @@
 //--------------
 
 
-Sum_Global_Constraint::Sum_Global_Constraint (vector<Variable *> & var, int cst): Global_Constraint (var)
+Sum_Global_Constraint::Sum_Global_Constraint (vector<Variable *> & var, long cst): Global_Constraint (var)
 // constructs a new constraint which involves the variable in var and whose relation compares the sum of the values of the variables in var to the constant cst with respect to comp
 {	
 	constant = cst;
