@@ -550,7 +550,7 @@ namespace XCSP3Core {
 
 
         int evaluate(std::map<std::string, int> &tuple) override {
-            return pow(parameters[0]->evaluate(tuple), parameters[1]->evaluate(tuple));
+            return (int)pow(parameters[0]->evaluate(tuple), parameters[1]->evaluate(tuple));
         }
         
         int get_min(std::map<std::string, int> & min, std::map<std::string, int> & max) {

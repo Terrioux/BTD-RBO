@@ -907,10 +907,11 @@ void XCSP3Manager::newConstraintElement(XConstraintElement *constraint) {
         }
     }
     if(constraint->value == nullptr) {
-        if(listOfIntegers.size() > 0)
-            throw runtime_error("Not yet supported");
         XCondition xc;
         constraint->extractCondition(xc);
+        if(listOfIntegers.size() > 0)
+            callback->buildConstraintElement(constraint->id, listOfIntegers, constraint->index, constraint->startIndex, xc);
+        else
         callback->buildConstraintElement(constraint->id, constraint->list, constraint->index, constraint->startIndex, xc);
         return;
     }
@@ -1069,7 +1070,7 @@ void XCSP3Manager::newConstraintNoOverlapKDim(XConstraintNoOverlap *constraint) 
     }
 
 
-    if(isInt > 0)
+    if(isInt)
         callback->buildConstraintNoOverlap(constraint->id, origins, intLengths, constraint->zeroIgnored);
     else
         callback->buildConstraintNoOverlap(constraint->id, origins, varLengths, constraint->zeroIgnored);
