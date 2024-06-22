@@ -82,7 +82,7 @@ void Lex_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, D
       {
         // we check whether the next variables 
         unsigned int beta = alpha+1;
-        while ((beta < tuple_size) && (scope_var[alpha]->Get_Domain()->Get_Real_Min() >= scope_var[alpha]->Get_Domain()->Get_Real_Max()))
+        while ((beta < tuple_size) && (scope_var[beta]->Get_Domain()->Get_Real_Min() >= scope_var[beta+tuple_size]->Get_Domain()->Get_Real_Max()))
           beta++;
           
         if (beta == tuple_size) 
@@ -123,7 +123,7 @@ void Lex_Global_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls, D
       {
         // we check whether the next variables 
         unsigned int beta = alpha+1;
-        while ((beta < tuple_size) && (scope_var[alpha]->Get_Domain()->Get_Real_Min() >= scope_var[alpha]->Get_Domain()->Get_Real_Max()))
+        while ((beta < tuple_size) && (scope_var[beta]->Get_Domain()->Get_Real_Min() >= scope_var[beta+tuple_size]->Get_Domain()->Get_Real_Max()))
           beta++;
           
         if (beta == tuple_size) 

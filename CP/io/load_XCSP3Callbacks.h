@@ -54,7 +54,7 @@ class Load_XCSP3Callbacks : public XCSP3CoreCallbacks     /// This class makes t
 		void buildConstraintAlldifferent(string id, vector<XVariable *> &list) override;      ///< creates an all-diff global constraint
 		void buildConstraintAlldifferentExcept(string id, vector<XVariable *> &list, vector<int> &except) override;     ///< creates an all-diff global constraint with an exception value
     void buildConstraintAlldifferent(string id, vector<Tree *> &list) override;   ///< creates an all-diff global constraint over expressions
-		//~ void buildConstraintAlldifferentList(string id, vector<vector<XVariable *>> &lists) override;
+		void buildConstraintAlldifferentList(string id, vector<vector<XVariable *>> &lists) override;   ///< creates an all-diff global constraint over lists
 		void buildConstraintAlldifferentMatrix(string id, vector<vector<XVariable *>> &matrix) override;      ///< creates a matrix version of the all-diff global constraint
 
 		void buildConstraintAllEqual(string id, vector<XVariable *> &list) override;    ///< creates an all-equal global constraint whose scope is provided by list

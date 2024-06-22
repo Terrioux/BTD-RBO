@@ -1,4 +1,6 @@
 #include "cop.h"
+#include <cctype>
+
 #include "load_XCSP3Callbacks.h"
 #include "predicate_constraint.h"
 #include "binary_extension_constraint.h"
@@ -41,6 +43,7 @@
 #include "length_k_dim_no_overlap_global_constraint.h"
 
 #include "all_different_global_constraint.h"
+#include "all_different_list_global_constraint.h"
 #include "all_different_except_global_constraint.h"
 #include "positive_compact_table_extension_constraint.h"
 #include "short_positive_compact_table_extension_constraint.h"
@@ -818,14 +821,21 @@ void Load_XCSP3Callbacks::buildConstraintAlldifferent(string id, vector<Tree *> 
   pb->Add_Constraint (new All_Different_Global_Constraint (scope),false);
 }
 
-//~ void Load_XCSP3Callbacks::buildConstraintAlldifferentList(string id, vector<vector<XVariable *> > &lists) {
-    //~ cout << "\n    allDiff list constraint" << id << endl;
-    //~ for(unsigned int i = 0 ; i < (lists.size() < 4 ? lists.size() : 3) ; i++) {
-        //~ cout << "        ";
-        //~ displayList(lists[i]);
 
-    //~ }
-//~ }
+void Load_XCSP3Callbacks::buildConstraintAlldifferentList(string id, vector<vector<XVariable *>> &lists)
+// creates an all-diff global constraint over lists
+{
+  unsigned list_size = lists[0].size();
+
+  // we first consider the scope of the constraint
+	vector<Variable *> scope;
+  
+  for (auto l : lists)
+    convert_variable_list (pb,l,scope);  
+  
+  // we create the constraint
+	pb->Add_Constraint (new All_Different_List_Global_Constraint (scope,list_size),false);
+}
 
 
 void Load_XCSP3Callbacks::buildConstraintAlldifferentMatrix(string id, vector<vector<XVariable *> > &matrix) 
@@ -970,10 +980,25 @@ void Load_XCSP3Callbacks::buildConstraintLex(string id, vector<vector<XVariable 
     
     // first vector
     for (vector<XVariable*>::iterator iter = lists[i+shift1].begin(); iter != lists[i+shift1].end(); iter++)
-      scope.push_back (pb->Get_Variable((*iter)->id));
+      if (isdigit((*iter)->id.c_str()[0]))
+      {
+        int val = atoi((*iter)->id.c_str());
+        buildVariableInteger((*iter)->id, val, val);
+        scope.push_back (pb->Get_Variable(pb->Get_N()-1));
+      }
+      else
+        scope.push_back (pb->Get_Variable((*iter)->id));
+      
     // second vector
     for (vector<XVariable*>::iterator iter = lists[i+shift2].begin(); iter != lists[i+shift2].end(); iter++)
-      scope.push_back (pb->Get_Variable((*iter)->id));
+      if (isdigit((*iter)->id.c_str()[0]))
+      {
+        int val = atoi((*iter)->id.c_str());
+        buildVariableInteger((*iter)->id, val, val);
+        scope.push_back (pb->Get_Variable(pb->Get_N()-1));
+      }
+      else
+        scope.push_back (pb->Get_Variable((*iter)->id));
 
   	// we create the constraint for the current pair of vectors
     pb->Add_Constraint (new Lex_Global_Constraint(scope,or_equal),false);
