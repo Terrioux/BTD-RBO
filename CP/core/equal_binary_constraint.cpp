@@ -138,7 +138,7 @@ void Equal_Binary_Constraint::Propagate (CSP * pb, Assignment & A, Support * ls,
       Domain * dx = scope_var[i]->Get_Domain();
 
       for (unsigned int j = 0; j < dx->Get_Initial_Size(); j++)
-        if ((event_manager->Exist_Event_Dmc (num_var,j,ref)) && (! event_manager->Exist_Event_Dmc (num_var,j,current_time)))
+        if ((event_manager->Exist_Event_Dmc (num_var,j,ref)) && (! event_manager->Exist_Event_Dmc (num_var,j,current_time)) && (equal_value[i][j] != -1))
         {
           if (scope_var[1-i]->Get_Domain()->Is_Present(equal_value[i][j]))
           {
