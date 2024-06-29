@@ -242,7 +242,7 @@ void convert_int_list (CSP * pb, vector<int> & ilist, string id, vector<Variable
 // converts a list of integers to a list of auxiliary variables
 {
 	for (vector<int>::iterator iter = ilist.begin(); iter != ilist.end(); iter++)
-    list.push_back (pb->Add_Variable(*iter,*iter,id,true));
+    list.push_back (pb->Add_Variable(*iter,*iter,id,false,false));
 }
 
 
@@ -302,8 +302,9 @@ void Load_XCSP3Callbacks::buildConstraintExtension(string id, vector<XVariable *
     {
       int i = 0;
       is_star_tuple = false;
+      bool valid = true;
 
-      for (vector<int>::iterator iter2 = iter->begin(); iter2 != iter->end(); iter2++)
+      for (vector<int>::iterator iter2 = iter->begin(); (iter2 != iter->end()) && (valid); iter2++)
       {
         if (*iter2 == star)
         {
@@ -322,18 +323,21 @@ void Load_XCSP3Callbacks::buildConstraintExtension(string id, vector<XVariable *
             t[i] = scope[i]->Get_Domain()->Get_Value ((*iter)[i]);
             
             if (t[i] == -1)
-              throw ("Error: unknown value");
+              valid = false;
           }
         i++;
       }
       
-      if (is_star_tuple)
-        generate_tuples (c,scope,t,is_star,support);
-      else
-        if (support)
-          c->Allow_Tuple (t);
-        else c->Forbid_Tuple (t);
-    
+      if (valid)
+      {
+        if (is_star_tuple)
+          generate_tuples (c,scope,t,is_star,support);
+        else
+          if (support)
+            c->Allow_Tuple (t);
+          else c->Forbid_Tuple (t);
+      }
+      
       // we save the tuples for the case where a similar constraint is defined after the current constraint
       last_tuples.push_back (*iter);
     } 
@@ -342,17 +346,21 @@ void Load_XCSP3Callbacks::buildConstraintExtension(string id, vector<XVariable *
     {
       for (vector<vector<int>>::iterator iter = tuples.begin(); iter != tuples.end(); iter++)
       {
-        for (unsigned int i = 0; i < arity; i++)
+        bool valid = true;
+        for (unsigned int i = 0; (i < arity) && (valid); i++)
         {
           t[i] = scope[i]->Get_Domain()->Get_Value ((*iter)[i]);
             
           if (t[i] == -1)
-            throw ("Error: unknown value");
+            valid = false;
         }
 
-        if (support)
-          c->Allow_Tuple (t);
-        else c->Forbid_Tuple (t);
+        if (valid)
+        {
+          if (support)
+            c->Allow_Tuple (t);
+          else c->Forbid_Tuple (t);
+        }
       
         // we save the tuples for the case where a similar constraint is defined after the current constraint
         last_tuples.push_back (*iter);
@@ -464,8 +472,9 @@ void Load_XCSP3Callbacks::buildConstraintExtensionAs(string id, vector<XVariable
         {
           int i = 0;
           is_star_tuple = false;
-
-          for (vector<int>::iterator iter2 = iter->begin(); iter2 != iter->end(); iter2++)
+          bool valid = true;
+          
+          for (vector<int>::iterator iter2 = iter->begin(); (iter2 != iter->end()) && (valid); iter2++)
           {
             if (*iter2 == star)
             {
@@ -484,34 +493,41 @@ void Load_XCSP3Callbacks::buildConstraintExtensionAs(string id, vector<XVariable
                 t[i] = scope[i]->Get_Domain()->Get_Value ((*iter)[i]);
                 
                 if (t[i] == -1)
-                  throw ("Error: unknown value");
+                  valid = false;
               }
             i++;
           }
           
-          if (is_star_tuple)
-            generate_tuples (c,scope,t,is_star,support);
-          else
-            if (support)
-              c->Allow_Tuple (t);
-            else c->Forbid_Tuple (t);
+          if (valid)
+          {
+            if (is_star_tuple)
+              generate_tuples (c,scope,t,is_star,support);
+            else
+              if (support)
+                c->Allow_Tuple (t);
+              else c->Forbid_Tuple (t);
+          }
         } 
       }
       else
         {
           for (vector<vector<int>>::iterator iter = last_tuples.begin(); iter != last_tuples.end(); iter++)
           {
-            for (unsigned int i = 0; i < arity; i++)
+            bool valid = true;
+            for (unsigned int i = 0; (i < arity) && (valid); i++)
             {
               t[i] = scope[i]->Get_Domain()->Get_Value ((*iter)[i]);
             
               if (t[i] == -1)
-                throw ("Error: unknown value");
+                valid = false;
             }
 
-            if (support)
-              c->Allow_Tuple (t);
-            else c->Forbid_Tuple (t);
+            if (valid)
+            {
+              if (support)
+                c->Allow_Tuple (t);
+              else c->Forbid_Tuple (t);
+            }
           }
         }
 
